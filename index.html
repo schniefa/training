@@ -86,14 +86,22 @@ main .wrap { padding-block: 16px calc(40px + env(safe-area-inset-bottom, 0px)); 
 .week-bar span i.done { background: var(--muted); opacity: .5; }
 .week-bar span i.now { background: var(--accent); opacity: 1; }
 .week-legend { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; font-size: 11px; color: var(--muted); text-align: center; }
-.next { background: var(--surface); border-radius: var(--r); box-shadow: var(--shadow); padding: 14px 16px; display: grid; gap: 6px; border-left: 6px solid var(--muted); }
-.next.ready { border-left-color: var(--good); }
-.next.late, .next.pause { border-left-color: var(--accent); }
+.nextcard { background: var(--surface); border-radius: var(--r); box-shadow: var(--shadow); padding: 14px 16px; display: grid; gap: 6px; border-left: 6px solid var(--muted); }
+.nextcard.ready { border-left-color: var(--good); }
+.nextcard.late, .nextcard.pause { border-left-color: var(--accent); }
 .next-k { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
 .next-h { font-family: var(--font-display); font-weight: 600; font-size: 22px; line-height: 1.1; }
-.next.ready .next-h { color: var(--good); }
-.next p { margin: 0; font-size: 14px; }
-.next .row { margin-top: 4px; }
+.nextcard.ready .next-h { color: var(--good); }
+.nextcard p { margin: 0; font-size: 14px; }
+.nextcard .row { margin-top: 4px; }
+.win { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 4px; margin-top: 4px; }
+.win div { border-radius: 8px; padding: 6px 2px; text-align: center; font-size: 11px; line-height: 1.2; background: var(--surface-2); color: var(--muted); display: grid; gap: 2px; }
+.win b { font-size: 14px; font-weight: 600; color: inherit; }
+.win .w-ideal { background: var(--good); color: var(--surface); }
+.win .w-ok { background: var(--good-soft); color: var(--good); }
+.win .w-late { background: var(--accent-soft); color: var(--accent); }
+.win .today { outline: 2px solid var(--fg); outline-offset: -2px; color: var(--fg); }
+.win .w-ideal.today { color: var(--surface); }
 .week-meta { grid-column: 1 / -1; font-size: 13px; color: var(--muted); margin-top: 2px; }
 
 .days { display: grid; gap: 12px; }
@@ -170,15 +178,20 @@ main .wrap { padding-block: 16px calc(40px + env(safe-area-inset-bottom, 0px)); 
 .addex { background: var(--surface); border: 2px dashed var(--line); border-radius: var(--r); padding: 12px; display: grid; gap: 10px; }
 .addex input { width: 100%; min-width: 0; border: 1px solid var(--line); background: var(--surface); border-radius: 8px; padding: 10px; font-size: 16px; }
 .addex .row input { width: 4.5em; text-align: center; }
+.sugg-list { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip.sugg { height: auto; min-height: 34px; padding: 6px 10px; font-weight: 500; text-align: left; }
 
 .dock { position: fixed; left: 0; right: 0; bottom: 0; z-index: 6; background: var(--surface); border-top: 1px solid var(--line); box-shadow: 0 -6px 20px rgba(0, 0, 0, .08); padding-top: 10px; padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px)); }
 .dock .wrap { display: grid; gap: 10px; }
 .timer { display: grid; grid-template-columns: auto 1fr auto; gap: 6px 12px; align-items: center; }
 .timer-t { font-family: var(--font-display); font-weight: 700; font-size: 34px; line-height: 1; font-variant-numeric: tabular-nums; min-width: 3.1ch; }
-.timer-l { font-size: 13px; color: var(--muted); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.timer-l { font-size: 12px; line-height: 1.25; color: var(--muted); min-width: 0; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
 .timer-ctl { display: flex; gap: 4px; }
 .timer-ctl button { border: 1px solid var(--line); background: var(--surface); border-radius: 8px; height: 36px; min-width: 44px; font-weight: 600; font-size: 14px; }
-.timer-bar { grid-column: 1 / -1; height: 6px; border-radius: 3px; background: var(--surface-2); overflow: hidden; }
+.timer-bar { grid-column: 1 / -1; height: 6px; border-radius: 3px; background: var(--surface-2); overflow: hidden; position: relative; }
+.timer-bar b { position: absolute; top: 0; bottom: 0; width: 2px; margin-left: -1px; background: var(--fg); opacity: .55; }
+.timer.ready .timer-t { color: var(--good); }
+.timer.ready .timer-bar i { background: var(--good); }
 .timer-bar i { display: block; height: 100%; width: 100%; background: var(--accent); transform-origin: left; }
 .timer.over .timer-t { color: var(--good); }
 .timer.over .timer-bar i { background: var(--good); }
@@ -229,7 +242,7 @@ td { padding: 6px 8px 6px 0; border-top: 1px solid var(--line); vertical-align: 
 .pe-row1 input { font-weight: 600; }
 .pe-move { display: flex; gap: 4px; }
 .pe-move button { border: 1px solid var(--line); background: var(--surface); width: 34px; height: 36px; border-radius: 8px; }
-.pe-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
+.pe-grid { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 6px; }
 .pe-grid label, .pe-link { display: grid; gap: 2px; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
 .pe-grid input { text-align: center; font-size: 15px; font-variant-numeric: tabular-nums; padding: 7px 6px !important; }
 .pe-link input { font-size: 14px; text-transform: none; letter-spacing: 0; color: var(--fg); }
@@ -260,42 +273,42 @@ const DAY_KEYS = ["A", "B", "C"];
 const MX = "https://modusx.de/fitness-uebungen/";
 const DEFAULT_PLAN = {
   A: { title: "Schwer", focus: "Brust & Rückendicke", ex: [
-    { id: "a1", name: "Bankdrücken Langhantel", sets: 4, min: 5, max: 7, rest: 180, step: 2.5, link: MX + "langhantel-flachbankdruecken/" },
-    { id: "a2", name: "Langhantelrudern vorgebeugt", sets: 4, min: 6, max: 8, rest: 150, step: 2.5, link: MX + "langhantelrudern/" },
-    { id: "a3", name: "Schrägbankdrücken Kurzhantel 30°", sets: 3, min: 8, max: 10, rest: 120, step: 2, link: MX + "kurzhantel-schraegbankdruecken/" },
-    { id: "a9", name: "Bulgarian Split Squats Kurzhantel (je Bein)", sets: 3, min: 8, max: 10, rest: 90, step: 2, link: MX + "bulgarian-split-squat/bulgarian-split-kniebeugen-mit-kurzhanteln/" },
-    { id: "a4", name: "Kabelrudern einarmig sitzend", sets: 3, min: 10, max: 12, rest: 90, step: 2.5, link: MX + "rudern-am-kabelzug-sitzend/enges-rudern-am-kabelzug/" },
-    { id: "a5", name: "Seitheben am Kabel", sets: 3, min: 12, max: 15, rest: 60, step: 2.5, link: MX + "seitheben-am-kabelzug/" },
-    { id: "a6", name: "SZ-Curls", sets: 3, min: 8, max: 10, rest: 90, step: 2, link: MX + "sz-curls/" },
-    { id: "a7", name: "French Press SZ-Stange Schrägbank", sets: 3, min: 8, max: 10, rest: 90, step: 2, link: MX + "french-press/french-press-mit-der-sz-stange/" },
-    { id: "a8", name: "Hängendes Beinheben", sets: 3, min: 10, max: 15, rest: 60, step: 2.5, bw: true, link: MX + "beinheben-haengend/" }
+    { id: "a1", name: "Bankdrücken Langhantel", sets: 4, min: 5, max: 7, rest: 120, restMax: 180, step: 2.5, link: MX + "langhantel-flachbankdruecken/" },
+    { id: "a2", name: "Langhantelrudern vorgebeugt", sets: 4, min: 6, max: 8, rest: 120, restMax: 180, step: 2.5, link: MX + "langhantelrudern/" },
+    { id: "a3", name: "Schrägbankdrücken Kurzhantel 30°", sets: 3, min: 8, max: 10, rest: 90, restMax: 120, step: 2, link: MX + "kurzhantel-schraegbankdruecken/" },
+    { id: "a9", name: "Bulgarian Split Squats Kurzhantel (je Bein)", sets: 3, min: 8, max: 10, rest: 90, restMax: 120, step: 2, link: MX + "bulgarian-split-squat/bulgarian-split-kniebeugen-mit-kurzhanteln/" },
+    { id: "a4", name: "Kabelrudern einarmig sitzend", sets: 3, min: 10, max: 12, rest: 60, restMax: 90, step: 2.5, link: MX + "rudern-am-kabelzug-sitzend/enges-rudern-am-kabelzug/" },
+    { id: "a5", name: "Seitheben am Kabel", sets: 3, min: 12, max: 15, rest: 45, restMax: 60, step: 2.5, link: MX + "seitheben-am-kabelzug/" },
+    { id: "a6", name: "SZ-Curls", sets: 3, min: 8, max: 10, rest: 60, restMax: 90, step: 2, link: MX + "sz-curls/" },
+    { id: "a7", name: "French Press SZ-Stange Schrägbank", sets: 3, min: 8, max: 10, rest: 60, restMax: 90, step: 2, link: MX + "french-press/french-press-mit-der-sz-stange/" },
+    { id: "a8", name: "Hängendes Beinheben", sets: 3, min: 10, max: 15, rest: 45, restMax: 60, step: 2.5, bw: true, link: MX + "beinheben-haengend/" }
   ] },
   B: { title: "Vertikal", focus: "Schultern, Lat & Arme", ex: [
-    { id: "b1", name: "Latzug breiter Obergriff", sets: 4, min: 6, max: 8, rest: 150, step: 5, link: MX + "latziehen-zur-brust/latzug-breit-zur-brust/" },
-    { id: "b2", name: "Schulterdrücken Kurzhantel sitzend", sets: 4, min: 6, max: 8, rest: 150, step: 2, link: MX + "schulterdruecken-mit-kurzhanteln/schulterdruecken-mit-kurzhanteln-sitzend/" },
-    { id: "b3", name: "Kurzhantelrudern einarmig, lat-betont", sets: 3, min: 10, max: 12, rest: 90, step: 2, link: MX + "klassisches-einarmiges-kurzhantel-rudern/" },
-    { id: "b4", name: "Dips", sets: 3, min: 8, max: 10, rest: 120, step: 2.5, bw: true, link: MX + "trizeps-dips/dips-fuer-den-trizeps-haengend-an-der-dipmaschine/" },
-    { id: "b5", name: "Reverse Butterfly Maschine", sets: 3, min: 12, max: 15, rest: 60, step: 5, link: MX + "butterfly-reverse-am-geraet/" },
-    { id: "b6", name: "Seitheben Kurzhantel", sets: 3, min: 12, max: 15, rest: 60, step: 1, link: MX + "kurzhantel-seitheben/kurzhantel-seitheben-im-stehen/" },
-    { id: "b7", name: "Hammercurls", sets: 3, min: 10, max: 12, rest: 75, step: 2, link: MX + "hammer-curls/hammer-curls-mit-kurzhanteln-stehend/" },
-    { id: "b8", name: "Trizepsstrecken über Kopf am Kabel", sets: 3, min: 10, max: 12, rest: 75, step: 2.5, link: MX + "trizepsdruecken-kabelzug/trizepsdruecken-ueber-kopf-am-kabelzug/" },
-    { id: "b10", name: "Hyperextensions (Rückenstrecker)", sets: 3, min: 12, max: 15, rest: 60, step: 2.5, bw: true, link: MX + "rueckenstrecken-am-geraet/hyperextensions-auf-der-hyperextension-bank/" },
-    { id: "b9", name: "Kabel-Crunch kniend", sets: 3, min: 10, max: 15, rest: 60, step: 5, link: MX + "cable-crunches/crunch-kniend-am-seil/" }
+    { id: "b1", name: "Latzug breiter Obergriff", sets: 4, min: 6, max: 8, rest: 120, restMax: 180, step: 5, link: MX + "latziehen-zur-brust/latzug-breit-zur-brust/" },
+    { id: "b2", name: "Schulterdrücken Kurzhantel sitzend", sets: 4, min: 6, max: 8, rest: 120, restMax: 180, step: 2, link: MX + "schulterdruecken-mit-kurzhanteln/schulterdruecken-mit-kurzhanteln-sitzend/" },
+    { id: "b3", name: "Kurzhantelrudern einarmig, lat-betont", sets: 3, min: 10, max: 12, rest: 60, restMax: 90, step: 2, link: MX + "klassisches-einarmiges-kurzhantel-rudern/" },
+    { id: "b4", name: "Dips", sets: 3, min: 8, max: 10, rest: 90, restMax: 120, step: 2.5, bw: true, link: MX + "trizeps-dips/dips-fuer-den-trizeps-haengend-an-der-dipmaschine/" },
+    { id: "b5", name: "Reverse Butterfly Maschine", sets: 3, min: 12, max: 15, rest: 45, restMax: 60, step: 5, link: MX + "butterfly-reverse-am-geraet/" },
+    { id: "b6", name: "Seitheben Kurzhantel", sets: 3, min: 12, max: 15, rest: 45, restMax: 60, step: 1, link: MX + "kurzhantel-seitheben/kurzhantel-seitheben-im-stehen/" },
+    { id: "b7", name: "Hammercurls", sets: 3, min: 10, max: 12, rest: 60, restMax: 90, step: 2, link: MX + "hammer-curls/hammer-curls-mit-kurzhanteln-stehend/" },
+    { id: "b8", name: "Trizepsstrecken über Kopf am Kabel", sets: 3, min: 10, max: 12, rest: 60, restMax: 90, step: 2.5, link: MX + "trizepsdruecken-kabelzug/trizepsdruecken-ueber-kopf-am-kabelzug/" },
+    { id: "b10", name: "Hyperextensions (Rückenstrecker)", sets: 3, min: 12, max: 15, rest: 45, restMax: 60, step: 2.5, bw: true, link: MX + "rueckenstrecken-am-geraet/hyperextensions-auf-der-hyperextension-bank/" },
+    { id: "b9", name: "Kabel-Crunch kniend", sets: 3, min: 10, max: 15, rest: 45, restMax: 60, step: 5, link: MX + "cable-crunches/crunch-kniend-am-seil/" }
   ] },
   C: { title: "Volumen & Pump", focus: "Maschinen & Kabel", ex: [
-    { id: "c1", name: "Schrägbankdrücken Multipresse", sets: 3, min: 8, max: 12, rest: 120, step: 2.5, link: MX + "multipresse-bankdruecken/schraegbankdruecken-an-der-multipresse-fuer-die-obere-brust/" },
-    { id: "c2", name: "Rudern Maschine mit Brustauflage", sets: 3, min: 10, max: 12, rest: 90, step: 5, link: MX + "kurzhantel-rudern-schraegbank/" },
-    { id: "c9", name: "Rumänisches Kreuzheben Langhantel", sets: 3, min: 8, max: 10, rest: 120, step: 2.5, link: MX + "gestrecktes-kreuzheben/" },
-    { id: "c3", name: "Cable Crossover von oben", sets: 3, min: 12, max: 15, rest: 60, step: 2.5, link: MX + "cable-fly/cable-fly-nach-unten-fuer-die-untere-brust/" },
-    { id: "c4", name: "Überzüge am Kabel", sets: 3, min: 12, max: 15, rest: 60, step: 2.5, link: MX + "ueberzuege-am-kabel-stehend/" },
-    { id: "c5", name: "Seitheben am Kabel (Myo-Reps)", sets: 4, min: 15, max: 20, rest: 50, step: 2.5, link: MX + "seitheben-am-kabelzug/" },
-    { id: "c6", name: "Face Pulls am Seil", sets: 3, min: 15, max: 20, rest: 60, step: 2.5, link: MX + "face-pulls/face-pulls-am-kabelzug/" },
+    { id: "c1", name: "Schrägbankdrücken Multipresse", sets: 3, min: 8, max: 12, rest: 90, restMax: 120, step: 2.5, link: MX + "multipresse-bankdruecken/schraegbankdruecken-an-der-multipresse-fuer-die-obere-brust/" },
+    { id: "c2", name: "Rudern Maschine mit Brustauflage", sets: 3, min: 10, max: 12, rest: 60, restMax: 90, step: 5, link: MX + "kurzhantel-rudern-schraegbank/" },
+    { id: "c9", name: "Rumänisches Kreuzheben Langhantel", sets: 3, min: 8, max: 10, rest: 90, restMax: 120, step: 2.5, link: MX + "gestrecktes-kreuzheben/" },
+    { id: "c3", name: "Cable Crossover von oben", sets: 3, min: 12, max: 15, rest: 45, restMax: 60, step: 2.5, link: MX + "cable-fly/cable-fly-nach-unten-fuer-die-untere-brust/" },
+    { id: "c4", name: "Überzüge am Kabel", sets: 3, min: 12, max: 15, rest: 45, restMax: 60, step: 2.5, link: MX + "ueberzuege-am-kabel-stehend/" },
+    { id: "c5", name: "Seitheben am Kabel (Myo-Reps)", sets: 4, min: 15, max: 20, rest: 45, restMax: 60, step: 2.5, link: MX + "seitheben-am-kabelzug/" },
+    { id: "c6", name: "Face Pulls am Seil", sets: 3, min: 15, max: 20, rest: 45, restMax: 60, step: 2.5, link: MX + "face-pulls/face-pulls-am-kabelzug/" },
     { id: "c7a", name: "Bayesian Curls", sets: 3, min: 12, max: 15, rest: 0, step: 2.5, ss: true, link: MX + "cable-curls/cable-curl-mit-einem-arm-am-tiefen-block/" },
-    { id: "c7b", name: "Trizepsdrücken Kabel mit Seil", sets: 3, min: 12, max: 15, rest: 60, step: 2.5, link: MX + "trizepsdruecken-kabelzug/trizeps-pushdowns-am-kabel/" },
-    { id: "c8", name: "Ab-Wheel-Rollout", sets: 3, min: 8, max: 12, rest: 60, step: 0, bw: true, link: MX + "bauchroller-uebung/bauchrolle-mit-dem-wheel-roller/" }
+    { id: "c7b", name: "Trizepsdrücken Kabel mit Seil", sets: 3, min: 12, max: 15, rest: 45, restMax: 60, step: 2.5, link: MX + "trizepsdruecken-kabelzug/trizeps-pushdowns-am-kabel/" },
+    { id: "c8", name: "Ab-Wheel-Rollout", sets: 3, min: 8, max: 12, rest: 45, restMax: 60, step: 0, bw: true, link: MX + "bauchroller-uebung/bauchrolle-mit-dem-wheel-roller/" }
   ] }
 };
-const PLAN_V = 3;
+const PLAN_V = 4;
 const PLAN_V2_ADD = [["A", "a3", "a9"], ["B", "b8", "b10"], ["C", "c2", "c9"]];
 function migratePlan(p) {
   if (!p || p.v >= PLAN_V) return null;
@@ -310,6 +323,12 @@ function migratePlan(p) {
   if (!(p.v >= 3)) {
     const c9 = out.C && Array.isArray(out.C.ex) && out.C.ex.find(e => e.id === "c9");
     if (c9 && c9.name === "Rumänisches Kreuzheben Kurzhantel") Object.assign(c9, JSON.parse(JSON.stringify(DEFAULT_PLAN.C.ex.find(e => e.id === "c9"))));
+  }
+  /* v4: Pausen als Spanne */
+  if (!(p.v >= 4)) for (const k of ["A", "B", "C"]) for (const e of (out[k] && out[k].ex) || []) {
+    if (e.restMax != null) continue;
+    const d = (DEFAULT_PLAN[k].ex.find(x => x.id === e.id)) || null;
+    if (d) { e.rest = d.rest; e.restMax = d.restMax; } else e.restMax = e.rest;
   }
   out.v = PLAN_V;
   return out;
@@ -364,7 +383,14 @@ function nextSlot(last, startMin, now) {
   const state = daysSince > 14 ? "pause" : now < ideal.getTime() - 3 * 3600000 ? "rest" : now <= latest.getTime() ? "ready" : "late";
   return { ideal, latest, end, state, daysSince };
 }
-function fmtRest(sec) { if (!sec) return "direkt weiter"; if (sec < 60) return `${sec} Sek`; return `${Math.floor(sec / 60)}:${pad2(sec % 60)} Min`; }
+function fmtRest(a, b) {
+  if (!a) return "direkt weiter";
+  b = Math.max(a, b || a);
+  const m = x => x % 60 ? `${Math.floor(x / 60)}:${pad2(x % 60)}` : String(x / 60);
+  if (b <= 90) return a === b ? `${a} Sek` : `${a}–${b} Sek`;
+  if (a < 60) return `${a} Sek–${m(b)} Min`;
+  return a === b ? `${m(a)} Min` : `${m(a)}–${m(b)} Min`;
+}
 function kgLabel(ex, kg) { if (ex && ex.bw) return kg ? `+${fmtKg(kg)} kg` : "ohne Zusatz"; return `${fmtKg(kg)} kg`; }
 function slug(name) {
   return String(name).toLowerCase().replace(/ä/g, "ae").replace(/ö/g, "oe").replace(/ü/g, "ue").replace(/ß/g, "ss")
@@ -748,7 +774,7 @@ function metaForSessionEx(se) {
   const pe = findPlanEx(se.id);
   if (pe) return clone(pe);
   const info = extraInfo(se.id) || {};
-  return { id: se.id, name: se.name, sets: se.sets.length, min: null, max: null, rest: 90, step: 2.5, extra: true, link: info.link || "" };
+  return { id: se.id, name: se.name, sets: se.sets.length, min: null, max: null, rest: 60, restMax: 90, step: 2.5, extra: true, link: info.link || "" };
 }
 function draftFromSession(s) {
   S.draft = { day: s.day, date: s.date, week: s.week || 1, ex: {}, order: [], editingId: s.id, startedAt: s.startedAt || s.createdAt || new Date().toISOString(), createdAt: s.createdAt || null, updatedAt: Date.now() };
@@ -855,7 +881,7 @@ function reminderHTML() {
   const nd = nextDay(), d = S.plan[nd], startMin = usualStart(S.sessions), now = Date.now();
   const slot = nextSlot(S.sessions[0], startMin, now);
   const title = `Tag ${nd} · ${esc(d.title)}`;
-  if (!slot) return `<section class="next ready" aria-label="Nächstes Training"><span class="next-k">Nächstes Training</span><span class="next-h">${title}</span><p>Starte, wann es dir passt. Danach zeigt dir GymBuddy, wann der nächste Tag am besten passt.</p></section>`;
+  if (!slot) return `<section class="nextcard ready" aria-label="Nächstes Training"><span class="next-k">Nächstes Training</span><span class="next-h">${title}</span><p>Starte, wann es dir passt. Danach zeigt dir GymBuddy, wann der nächste Tag am besten passt.</p></section>`;
   const day = x => `${WD[x.getDay()]} ${pad2(x.getDate())}.${pad2(x.getMonth() + 1)}.`;
   const hm = x => `${pad2(x.getHours())}:${pad2(x.getMinutes())}`;
   let when = slot.ideal;
@@ -871,13 +897,24 @@ function reminderHTML() {
     text = `Seit deinem letzten Training am ${day(slot.end)} hattest du genug Erholung. Bis ${day(slot.latest)} ist der beste Zeitpunkt.`;
   } else if (slot.state === "late") {
     head = `Zeit für ${title}`;
-    text = `Dein letztes Training war am ${day(slot.end)}. Am besten trainierst du heute oder morgen, sonst lässt der Trainingsreiz nach.`;
+    text = `Dein letztes Training war am ${day(slot.end)} Am besten trainierst du heute oder morgen, sonst lässt der Trainingsreiz nach.`;
   } else {
     head = "Lange Pause";
     text = `Seit ${Math.floor(slot.daysSince)} Tagen kein Training. Starte am besten einen neuen Block mit einer Einstiegsrunde: Technik sauber, RIR 3.`;
     extra = ri0() === 1 ? cal : `<button class="btn primary" id="pause-newblock" data-act="newblock-yes">Neuen Block starten</button>`;
   }
-  return `<section class="next ${slot.state}" aria-label="Nächstes Training"><span class="next-k">Nächstes Training</span><span class="next-h">${head}</span><p>${text}</p><p class="note-line">48–72 Stunden Pause geben dem Oberkörper genug Erholung, ohne dass der Trainingsreiz verpufft.</p><div class="row">${extra}</div></section>`;
+  return `<section class="nextcard ${slot.state}" aria-label="Nächstes Training"><span class="next-k">Nächstes Training · Pause 48–72 Std.</span><span class="next-h">${head}</span><p>${text}</p>${slot.state === "pause" ? "" : windowHTML(slot)}<p class="note-line">48–72 Stunden Pause geben dem Oberkörper genug Erholung, ohne dass der Trainingsreiz verpufft.</p><div class="row">${extra}</div></section>`;
+}
+/* Pausenfenster zwischen zwei Trainingstagen: Training · Erholung · Ideal · Noch gut · Spät */
+function windowHTML(slot) {
+  const base = isoToDate(dateToISO(slot.end)), today = todayISO();
+  const kinds = [["w-done", "Training"], ["w-rest", "Erholung"], ["w-ideal", "Ideal"], ["w-ok", "Noch gut"], ["w-late", "Spät"]];
+  const lastIdx = Math.min(4, Math.max(0, Math.round((isoToDate(today) - base) / 86400000)));
+  return `<div class="win" role="img" aria-label="Pausenfenster: ideal am ${fmtDateWd(dateToISO(new Date(base.getTime() + 2 * 86400000)))}, spätestens ${fmtDateWd(dateToISO(new Date(base.getTime() + 3 * 86400000)))}">${kinds.map(([cls, label], k) => {
+    const d = new Date(base); d.setDate(d.getDate() + k);
+    const iso = dateToISO(d), isToday = iso === today || (k === 4 && lastIdx === 4 && iso < today);
+    return `<div class="${cls}${isToday ? " today" : ""}"><b>${WD[d.getDay()]}</b><span>${isToday ? "heute" : fmtDate(iso)}</span><span>${label}</span></div>`;
+  }).join("")}</div>`;
 }
 function ri0() { const r = currentRound(); return r.round === 1 && r.step === 1 ? 1 : 0; }
 function exTitle(e) {
@@ -907,7 +944,7 @@ function workoutHTML() {
       <span class="timer-t" id="timer-t">0:00</span>
       <span class="timer-l" id="timer-l">Pause</span>
       <span class="timer-ctl"><button id="t-minus" data-act="t-15" aria-label="15 Sekunden weniger">−15</button><button id="t-plus" data-act="t+15" aria-label="15 Sekunden mehr">+15</button><button id="t-stop" data-act="tstop" aria-label="Pause beenden">✕</button></span>
-      <div class="timer-bar"><i id="timer-bar"></i></div>
+      <div class="timer-bar"><i id="timer-bar"></i><b id="timer-mark" hidden></b></div>
     </div>
     <div class="dock-row">
       <span class="dock-count num" id="dock-count"></span>
@@ -918,24 +955,28 @@ function workoutHTML() {
 }
 function addExHTML() {
   if (!S.addOpen) return `<div id="addex-wrap"><button class="btn ghost" id="addex-open" data-act="addex-open" style="width:100%;justify-content:center">+ Übung hinzufügen</button></div>`;
-  const inDraft = new Set(draftList().map(e => e.id));
-  const sugg = [];
-  for (const k of DAY_KEYS) for (const e of planEx(k)) if (!inDraft.has(e.id)) sugg.push(e.name);
-  for (const x of knownExtras()) if (!inDraft.has(x.id)) sugg.push(x.name);
   return `<div id="addex-wrap"><section class="addex" aria-label="Spontane Übung hinzufügen">
-    <input id="addex-name" list="addex-list" placeholder="Name der Übung, z. B. Butterfly" autocomplete="off" enterkeyhint="done">
-    <datalist id="addex-list">${[...new Set(sugg)].map(n => `<option value="${esc(n)}"></option>`).join("")}</datalist>
+    <input id="addex-name" placeholder="Name der Übung, z. B. Butterfly" autocomplete="off" autocorrect="off" enterkeyhint="done">
+    <div class="sugg-list" id="addex-sugg">${suggHTML("")}</div>
     <div class="row"><label for="addex-sets">Sätze</label><input id="addex-sets" inputmode="numeric" value="3">
       <button class="btn primary" id="addex-ok" data-act="addex-ok">Hinzufügen</button>
       <button class="link" id="addex-cancel" data-act="addex-cancel">Abbrechen</button></div>
     <p class="note-line">Übungen aus Tag A, B oder C behalten ihren Verlauf. Neue Übungen erkennt die App beim nächsten Mal am Namen wieder.</p>
   </section></div>`;
 }
+function suggHTML(q) {
+  const inDraft = new Set(draftList().map(e => e.id)), all = [];
+  for (const x of knownExtras()) if (!inDraft.has(x.id)) all.push(x.name);
+  for (const k of DAY_KEYS) for (const e of planEx(k)) if (!inDraft.has(e.id)) all.push(e.name);
+  q = (q || "").trim().toLowerCase();
+  const list = [...new Set(all)].filter(n => !q || n.toLowerCase().includes(q)).slice(0, 8);
+  return list.length ? list.map(n => `<button class="chip sugg" data-act="addex-pick" data-v="${esc(n)}">${esc(n)}</button>`).join("") : (q ? `<span class="note-line">Neue Übung – einfach hinzufügen.</span>` : "");
+}
 function cardInner(e, label) {
   const D = S.draft, st = D.ex[e.id];
   const ent = lastEntry(S.sessions, e.id, D.date, D.editingId), rec = recommend(e, ent);
   const done = st.sets.filter(s => s.done).length;
-  const target = e.extra ? `Spontan · Pause ${fmtRest(e.rest)}` : `${e.sets} × ${e.min}–${e.max} · Pause ${fmtRest(e.rest)}`;
+  const target = e.extra ? `Spontan · Pause ${fmtRest(e.rest, e.restMax)}` : `${e.sets} × ${e.min}–${e.max} · Pause ${fmtRest(e.rest, e.restMax)}`;
   let h = `<div class="ex-h"><span class="ex-n">${esc(label || "")}</span><div class="ex-t"><h3>${exTitle(e)}</h3><p class="ex-target">${target}</p></div><span class="ex-count num">${done}/${st.sets.length}</span></div>`;
   h += `<div class="ex-last">${ent ? `<span class="num">${fmtDate(ent.s.date)}: ${esc(setsStr(ent.e.sets, e))}</span>` : ""}<span class="pill ${rec.up ? "up" : ""}">${esc(rec.text)}</span></div>`;
   if (e.ss) h += `<div class="ss-note">Supersatz: nach jedem Satz direkt zur nächsten Übung.</div>`;
@@ -1064,7 +1105,8 @@ function planHTML() {
         <label>Sätze<input id="pe-sets-${e.id}" data-pf="sets" inputmode="numeric" value="${e.sets}"></label>
         <label>Wdh. von<input id="pe-min-${e.id}" data-pf="min" inputmode="numeric" value="${e.min}"></label>
         <label>Wdh. bis<input id="pe-max-${e.id}" data-pf="max" inputmode="numeric" value="${e.max}"></label>
-        <label>Pause Sek.<input id="pe-rest-${e.id}" data-pf="rest" inputmode="numeric" value="${e.rest}"></label>
+        <label>Pause ab s<input id="pe-rest-${e.id}" data-pf="rest" inputmode="numeric" value="${e.rest}"></label>
+        <label>Pause bis s<input id="pe-restmax-${e.id}" data-pf="restMax" inputmode="numeric" value="${e.restMax == null ? e.rest : e.restMax}"></label>
         <label>Steig. kg<input id="pe-step-${e.id}" data-pf="step" inputmode="decimal" value="${fmtKg(e.step)}"></label>
       </div>
       <label class="pe-link">Anleitung (Link)<input id="pe-link-${e.id}" data-pf="link" inputmode="url" value="${esc(e.link || "")}" placeholder="https://modusx.de/…"></label>
@@ -1085,14 +1127,14 @@ function planHTML() {
 }
 
 /* ---------- timer, sound, wake lock ---------- */
-const T = { endAt: 0, total: 0, label: "", iv: null, fired: false };
+const T = { start: 0, minAt: 0, endAt: 0, label: "", iv: null, f1: false, f2: false };
 let AC = null, WL = null;
 function unlockAudio() { try { AC = AC || new (window.AudioContext || window.webkitAudioContext)(); if (AC.state === "suspended") AC.resume(); } catch (e) {} }
-function beep() {
+function beep(count) {
   if (prefs.sound && AC) {
     try {
       const t = AC.currentTime;
-      [0, 0.28, 0.56].forEach(o => {
+      [0, 0.28, 0.56].slice(0, count || 3).forEach(o => {
         const os = AC.createOscillator(), g = AC.createGain();
         os.frequency.value = 880; g.gain.setValueAtTime(0.0001, t + o);
         g.gain.exponentialRampToValueAtTime(0.25, t + o + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t + o + 0.2);
@@ -1102,23 +1144,33 @@ function beep() {
   }
   try { if (navigator.vibrate) navigator.vibrate([200, 100, 200]); } catch (e) {}
 }
-function startTimer(sec, label) {
-  if (!sec || sec <= 0) return;
-  T.total = sec; T.endAt = Date.now() + sec * 1000; T.label = label; T.fired = false;
-  if (!T.iv) T.iv = setInterval(tickTimer, 250);
-  tickTimer();
+/* Pause als Spanne: ab der Untergrenze bereit (Signal), an der Obergrenze spätestens los (zweites Signal) */
+function startTimer(minSec, maxSec, label) {
+  if (!minSec || minSec <= 0) return;
+  maxSec = Math.max(minSec, maxSec || minSec);
+  const now = Date.now();
+  T.start = now; T.minAt = now + minSec * 1000; T.endAt = now + maxSec * 1000; T.label = label; T.f1 = T.f2 = false;
+  ensureTick(); tickTimer();
 }
-function stopTimer() { T.endAt = 0; T.fired = false; if (T.iv) { clearInterval(T.iv); T.iv = null; } tickTimer(); }
+function ensureTick() { if (!T.iv) T.iv = setInterval(tickTimer, 250); }
+function stopTimer() { T.endAt = 0; T.f1 = T.f2 = false; if (T.iv) { clearInterval(T.iv); T.iv = null; } tickTimer(); }
 function tickTimer() {
   const el = $("#timer"); if (!el) return;
-  if (!T.endAt) { el.hidden = true; el.classList.remove("over"); return; }
+  if (!T.endAt) { el.hidden = true; el.classList.remove("over", "ready"); return; }
   el.hidden = false;
-  const leftMs = Math.max(0, T.endAt - Date.now()), left = Math.ceil(leftMs / 1000);
-  $("#timer-t").textContent = left > 0 ? `${Math.floor(left / 60)}:${pad2(left % 60)}` : "Los!";
-  $("#timer-l").textContent = left > 0 ? `Pause · ${T.label}` : "Pause vorbei – nächster Satz";
-  $("#timer-bar").style.transform = `scaleX(${T.total ? leftMs / (T.total * 1000) : 0})`;
-  el.classList.toggle("over", left === 0);
-  if (left === 0 && !T.fired) { T.fired = true; beep(); setTimeout(() => { if (T.fired && T.endAt && Date.now() - T.endAt > 5000) stopTimer(); }, 6000); }
+  const now = Date.now(), toMin = T.minAt - now, toEnd = T.endAt - now, total = Math.max(1, T.endAt - T.start), span = T.endAt - T.minAt > 999;
+  const fmt = ms => { const x = Math.max(0, Math.ceil(ms / 1000)); return `${Math.floor(x / 60)}:${pad2(x % 60)}`; };
+  let big, small, cls = "";
+  if (toMin > 0) { big = fmt(toMin); small = `Pause · ${T.label}${span ? ` · danach noch bis zu ${fmt(T.endAt - T.minAt)}` : ""}`; }
+  else if (toEnd > 0) { big = "Bereit"; small = `Los, wenn du bereit bist · spätestens in ${fmt(toEnd)}`; cls = "ready"; if (!T.f1) { T.f1 = true; beep(2); } }
+  else {
+    big = "Los!"; small = "Pause vorbei – nächster Satz"; cls = "over";
+    if (!T.f2) { T.f2 = true; beep(span ? 3 : 2); setTimeout(() => { if (T.f2 && T.endAt && Date.now() - T.endAt > 5000) stopTimer(); }, 6000); }
+  }
+  $("#timer-t").textContent = big; $("#timer-l").textContent = small;
+  $("#timer-bar").style.transform = `scaleX(${Math.max(0, toEnd) / total})`;
+  const mk = $("#timer-mark"); if (mk) { mk.hidden = !span; mk.style.left = `${(T.minAt - T.start) / total * 100}%`; }
+  el.classList.toggle("ready", cls === "ready"); el.classList.toggle("over", cls === "over");
 }
 async function keepAwake(on) {
   try {
@@ -1160,7 +1212,7 @@ function addExtra() {
   else {
     const id = "sp-" + slug(name);
     const known = knownExtras().find(x => x.id === id);
-    meta = { id, name: known ? known.name : name, sets: n, min: null, max: null, rest: 90, step: 2.5, extra: true, link: known ? (known.link || "") : "" };
+    meta = { id, name: known ? known.name : name, sets: n, min: null, max: null, rest: 60, restMax: 90, step: 2.5, extra: true, link: known ? (known.link || "") : "" };
     if (!S.data.extras[id]) { S.data.extras[id] = { name: meta.name, link: "", at: Date.now() }; commit(); }
   }
   if (D.ex[meta.id] || draftList().some(x => x.id === meta.id)) { toast("Die Übung ist schon in der Liste."); return; }
@@ -1233,7 +1285,8 @@ function sanitizePlan(p) {
   for (const k of DAY_KEYS) p[k].ex = p[k].ex.map(e => {
     const n = (v, d, lo, hi) => { const x = parseNum(v); return x == null ? d : Math.min(hi, Math.max(lo, x)); };
     const min = Math.round(n(e.min, 8, 1, 50)), max = Math.max(min, Math.round(n(e.max, 12, 1, 60)));
-    const o = { id: e.id, name: String(e.name || "").trim() || "Neue Übung", sets: Math.round(n(e.sets, 3, 1, 10)), min, max, rest: Math.round(n(e.rest, 90, 0, 600)), step: round2(n(e.step, 2.5, 0, 50)) };
+    const o = { id: e.id, name: String(e.name || "").trim() || "Neue Übung", sets: Math.round(n(e.sets, 3, 1, 10)), min, max, rest: Math.round(n(e.rest, 60, 0, 600)), restMax: 0, step: round2(n(e.step, 2.5, 0, 50)) };
+    o.restMax = Math.max(o.rest, Math.round(n(e.restMax, o.rest, 0, 900)));
     if (e.bw) o.bw = true; if (e.ss) o.ss = true;
     const l = safeLink(e.link); if (l) o.link = l;
     return o;
@@ -1276,12 +1329,13 @@ document.addEventListener("click", ev => {
       }
       touch(); const y = window.scrollY; render(); window.scrollTo(0, y); return;
     }
-    case "t-15": T.endAt = Math.max(Date.now(), T.endAt - 15000); tickTimer(); return;
-    case "t+15": if (T.fired) { T.fired = false; T.endAt = Date.now(); } T.endAt += 15000; T.total = Math.max(T.total, Math.ceil((T.endAt - Date.now()) / 1000)); if (!T.iv) T.iv = setInterval(tickTimer, 250); tickTimer(); return;
+    case "t-15": { const now = Date.now(); T.minAt = Math.max(now, T.minAt - 15000); T.endAt = Math.max(T.minAt, T.endAt - 15000); tickTimer(); return; }
+    case "t+15": { const now = Date.now(); if (now >= T.endAt) { T.endAt = now + 15000; T.minAt = T.endAt; T.start = now; T.f1 = T.f2 = false; } else { T.endAt += 15000; if (now < T.minAt) T.minAt += 15000; else T.f2 = false; } ensureTick(); tickTimer(); return; }
     case "tstop": stopTimer(); return;
     case "addex-open": S.addOpen = true; $("#addex-wrap").outerHTML = addExHTML(); setTimeout(() => { const i = $("#addex-name"); if (i) i.focus(); }, 0); return;
     case "addex-cancel": S.addOpen = false; $("#addex-wrap").outerHTML = addExHTML(); return;
     case "addex-ok": addExtra(); return;
+    case "addex-pick": { const i = $("#addex-name"); if (i) { i.value = v; i.blur(); } const sg = $("#addex-sugg"); if (sg) sg.innerHTML = suggHTML(v); return; }
     case "prog": S.openProg = S.openProg === v ? null : v; render(); return;
     case "hist": S.openHist = S.openHist === v ? null : v; S.confirm = null; render(); return;
     case "edit": { const s = S.sessions.find(x => x.id === v); if (!s) return; if (S.draft) { toast("Erst das laufende Training speichern oder verwerfen."); return; } draftFromSession(s); openWorkout(); return; }
@@ -1290,7 +1344,7 @@ document.addEventListener("click", ev => {
     case "pe-day": S.pe.day = v; S.confirm = null; render(); return;
     case "pe-up": case "pe-down": { const i = Number(b.closest(".pe-item").dataset.idx), L = S.pe.plan[S.pe.day].ex, j = act === "pe-up" ? i - 1 : i + 1; if (j < 0 || j >= L.length) return; [L[i], L[j]] = [L[j], L[i]]; S.pe.dirty = true; render(); return; }
     case "pe-del": S.pe.plan[S.pe.day].ex.splice(Number(v), 1); S.pe.dirty = true; S.confirm = null; render(); return;
-    case "pe-add": S.pe.plan[S.pe.day].ex.push({ id: "x" + Date.now().toString(36), name: "Neue Übung", sets: 3, min: 10, max: 12, rest: 90, step: 2.5 }); S.pe.dirty = true; render(); setTimeout(() => { const ins = document.querySelectorAll('.pe-item input[data-pf="name"]'); const l = ins[ins.length - 1]; if (l) { l.focus(); l.select(); } }, 0); return;
+    case "pe-add": S.pe.plan[S.pe.day].ex.push({ id: "x" + Date.now().toString(36), name: "Neue Übung", sets: 3, min: 10, max: 12, rest: 60, restMax: 90, step: 2.5 }); S.pe.dirty = true; render(); setTimeout(() => { const ins = document.querySelectorAll('.pe-item input[data-pf="name"]'); const l = ins[ins.length - 1]; if (l) { l.focus(); l.select(); } }, 0); return;
     case "pe-revert": S.pe = null; render(); return;
     case "pe-save": { const p = sanitizePlan(clone(S.pe.plan)), doc = { v: PLAN_V }; for (const k of DAY_KEYS) doc[k] = { ex: p[k].ex }; savePlanDoc(doc); S.pe = null; render(); toast("Plan gespeichert"); syncFromTap(false); return; }
     case "pe-reset": S.data.plan = null; S.data.planAt = Date.now(); commit(); S.pe = null; S.confirm = null; render(); toast("Ursprünglicher Plan wiederhergestellt"); syncFromTap(false); return;
@@ -1313,7 +1367,7 @@ document.addEventListener("click", ev => {
       if (s.reps == null) s.reps = repPlaceholder(e, ent, rec, i);
       if (s.kg == null) s.kg = 0;
       s.done = true; s.kgSet = true; propagate(st, i);
-      if (e.rest > 0) startTimer(e.rest, e.name);
+      if (e.rest > 0) startTimer(e.rest, e.restMax, e.name);
       else { const list = draftList(), nx = list[list.findIndex(x => x.id === id) + 1]; if (nx) toast(`Direkt weiter: ${nx.name}`); }
     }
   } else if (act === "rir") { const n = Number(v); st.rir = st.rir === n ? null : n; }
@@ -1328,6 +1382,7 @@ document.addEventListener("click", ev => {
 
 document.addEventListener("input", ev => {
   const t = ev.target;
+  if (t.id === "addex-name") { const sg = $("#addex-sugg"); if (sg) sg.innerHTML = suggHTML(t.value); return; }
   if (t.dataset.f && S.view === "workout" && S.draft) {
     if (t.dataset.f === "date") { if (t.value) { S.draft.date = t.value; touch(); } return; }
     const c = setCtx(t); if (!c) return;
@@ -1366,7 +1421,7 @@ document.addEventListener("change", ev => {
     });
   }
 });
-document.addEventListener("keydown", ev => { if (ev.key === "Enter" && ev.target.id === "addex-name") { ev.preventDefault(); addExtra(); } });
+document.addEventListener("keydown", ev => { if (ev.key === "Enter" && ev.target.id === "addex-name") { ev.preventDefault(); ev.target.blur(); } });
 
 /* ---------- boot ---------- */
 { const mp = migratePlan(S.data.plan); if (mp) { S.data.plan = mp; S.data.planAt = Date.now(); LS.set("data", S.data); } }
