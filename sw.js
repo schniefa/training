@@ -1,5 +1,5 @@
-/* Oberkörper-Log – Offline-Cache. Bei Änderungen an den Dateien die Versionsnummer erhöhen. */
-const CACHE = "okl-v1";
+/* GymBuddy – Offline-Cache. Bei Änderungen an den Dateien die Versionsnummer erhöhen. */
+const CACHE = "gymbuddy-v4";
 const ASSETS = ["./", "./index.html", "./config.js", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png", "./icon-maskable-512.png", "./apple-touch-icon.png"];
 
 self.addEventListener("install", e => {

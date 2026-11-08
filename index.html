@@ -3,7 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Oberkörper-Log</title>
+<title>GymBuddy</title>
+<meta name="application-name" content="GymBuddy">
 <meta name="theme-color" content="#EDF0F3" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0E1318" media="(prefers-color-scheme: dark)">
 <link rel="manifest" href="manifest.webmanifest">
@@ -78,10 +79,21 @@ main .wrap { padding-block: 16px calc(40px + env(safe-area-inset-bottom, 0px)); 
 .week-num span { font-size: 20px; color: var(--muted); font-weight: 600; }
 .week-phase { font-family: var(--font-display); font-weight: 600; font-size: 19px; text-transform: uppercase; letter-spacing: .03em; }
 .week-hint { font-size: 14px; color: var(--muted); }
-.week-bar { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; margin-top: 8px; }
-.week-bar i { height: 6px; border-radius: 3px; background: var(--surface-2); }
-.week-bar i.past { background: var(--muted); opacity: .45; }
-.week-bar i.now { background: var(--accent); }
+.week-bar { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; margin-top: 8px; }
+.week-bar span { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; }
+.week-bar i { height: 6px; border-radius: 2px; background: var(--surface-2); }
+.week-bar span.deload i { background: var(--good-soft); }
+.week-bar span i.done { background: var(--muted); opacity: .5; }
+.week-bar span i.now { background: var(--accent); opacity: 1; }
+.week-legend { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; font-size: 11px; color: var(--muted); text-align: center; }
+.next { background: var(--surface); border-radius: var(--r); box-shadow: var(--shadow); padding: 14px 16px; display: grid; gap: 6px; border-left: 6px solid var(--muted); }
+.next.ready { border-left-color: var(--good); }
+.next.late, .next.pause { border-left-color: var(--accent); }
+.next-k { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+.next-h { font-family: var(--font-display); font-weight: 600; font-size: 22px; line-height: 1.1; }
+.next.ready .next-h { color: var(--good); }
+.next p { margin: 0; font-size: 14px; }
+.next .row { margin-top: 4px; }
 .week-meta { grid-column: 1 / -1; font-size: 13px; color: var(--muted); margin-top: 2px; }
 
 .days { display: grid; gap: 12px; }
@@ -251,6 +263,7 @@ const DEFAULT_PLAN = {
     { id: "a1", name: "Bankdrücken Langhantel", sets: 4, min: 5, max: 7, rest: 180, step: 2.5, link: MX + "langhantel-flachbankdruecken/" },
     { id: "a2", name: "Langhantelrudern vorgebeugt", sets: 4, min: 6, max: 8, rest: 150, step: 2.5, link: MX + "langhantelrudern/" },
     { id: "a3", name: "Schrägbankdrücken Kurzhantel 30°", sets: 3, min: 8, max: 10, rest: 120, step: 2, link: MX + "kurzhantel-schraegbankdruecken/" },
+    { id: "a9", name: "Bulgarian Split Squats Kurzhantel (je Bein)", sets: 3, min: 8, max: 10, rest: 90, step: 2, link: MX + "bulgarian-split-squat/bulgarian-split-kniebeugen-mit-kurzhanteln/" },
     { id: "a4", name: "Kabelrudern einarmig sitzend", sets: 3, min: 10, max: 12, rest: 90, step: 2.5, link: MX + "rudern-am-kabelzug-sitzend/enges-rudern-am-kabelzug/" },
     { id: "a5", name: "Seitheben am Kabel", sets: 3, min: 12, max: 15, rest: 60, step: 2.5, link: MX + "seitheben-am-kabelzug/" },
     { id: "a6", name: "SZ-Curls", sets: 3, min: 8, max: 10, rest: 90, step: 2, link: MX + "sz-curls/" },
@@ -266,11 +279,13 @@ const DEFAULT_PLAN = {
     { id: "b6", name: "Seitheben Kurzhantel", sets: 3, min: 12, max: 15, rest: 60, step: 1, link: MX + "kurzhantel-seitheben/kurzhantel-seitheben-im-stehen/" },
     { id: "b7", name: "Hammercurls", sets: 3, min: 10, max: 12, rest: 75, step: 2, link: MX + "hammer-curls/hammer-curls-mit-kurzhanteln-stehend/" },
     { id: "b8", name: "Trizepsstrecken über Kopf am Kabel", sets: 3, min: 10, max: 12, rest: 75, step: 2.5, link: MX + "trizepsdruecken-kabelzug/trizepsdruecken-ueber-kopf-am-kabelzug/" },
+    { id: "b10", name: "Hyperextensions (Rückenstrecker)", sets: 3, min: 12, max: 15, rest: 60, step: 2.5, bw: true, link: MX + "rueckenstrecken-am-geraet/hyperextensions-auf-der-hyperextension-bank/" },
     { id: "b9", name: "Kabel-Crunch kniend", sets: 3, min: 10, max: 15, rest: 60, step: 5, link: MX + "cable-crunches/crunch-kniend-am-seil/" }
   ] },
   C: { title: "Volumen & Pump", focus: "Maschinen & Kabel", ex: [
     { id: "c1", name: "Schrägbankdrücken Multipresse", sets: 3, min: 8, max: 12, rest: 120, step: 2.5, link: MX + "multipresse-bankdruecken/schraegbankdruecken-an-der-multipresse-fuer-die-obere-brust/" },
     { id: "c2", name: "Rudern Maschine mit Brustauflage", sets: 3, min: 10, max: 12, rest: 90, step: 5, link: MX + "kurzhantel-rudern-schraegbank/" },
+    { id: "c9", name: "Rumänisches Kreuzheben Langhantel", sets: 3, min: 8, max: 10, rest: 120, step: 2.5, link: MX + "gestrecktes-kreuzheben/" },
     { id: "c3", name: "Cable Crossover von oben", sets: 3, min: 12, max: 15, rest: 60, step: 2.5, link: MX + "cable-fly/cable-fly-nach-unten-fuer-die-untere-brust/" },
     { id: "c4", name: "Überzüge am Kabel", sets: 3, min: 12, max: 15, rest: 60, step: 2.5, link: MX + "ueberzuege-am-kabel-stehend/" },
     { id: "c5", name: "Seitheben am Kabel (Myo-Reps)", sets: 4, min: 15, max: 20, rest: 50, step: 2.5, link: MX + "seitheben-am-kabelzug/" },
@@ -280,6 +295,25 @@ const DEFAULT_PLAN = {
     { id: "c8", name: "Ab-Wheel-Rollout", sets: 3, min: 8, max: 12, rest: 60, step: 0, bw: true, link: MX + "bauchroller-uebung/bauchrolle-mit-dem-wheel-roller/" }
   ] }
 };
+const PLAN_V = 3;
+const PLAN_V2_ADD = [["A", "a3", "a9"], ["B", "b8", "b10"], ["C", "c2", "c9"]];
+function migratePlan(p) {
+  if (!p || p.v >= PLAN_V) return null;
+  const out = JSON.parse(JSON.stringify(p));
+  if (!(p.v >= 2)) for (const [day, after, id] of PLAN_V2_ADD) {
+    if (!out[day] || !Array.isArray(out[day].ex) || out[day].ex.some(e => e.id === id)) continue;
+    const add = DEFAULT_PLAN[day].ex.find(e => e.id === id);
+    const k = out[day].ex.findIndex(e => e.id === after);
+    out[day].ex.splice(k < 0 ? Math.max(0, out[day].ex.length - 1) : k + 1, 0, JSON.parse(JSON.stringify(add)));
+  }
+  /* v3: Rumänisches Kreuzheben mit Langhantel statt Kurzhanteln (nur wenn der Name noch der alte ist) */
+  if (!(p.v >= 3)) {
+    const c9 = out.C && Array.isArray(out.C.ex) && out.C.ex.find(e => e.id === "c9");
+    if (c9 && c9.name === "Rumänisches Kreuzheben Kurzhantel") Object.assign(c9, JSON.parse(JSON.stringify(DEFAULT_PLAN.C.ex.find(e => e.id === "c9"))));
+  }
+  out.v = PLAN_V;
+  return out;
+}
 const clone = o => JSON.parse(JSON.stringify(o));
 const round2 = n => Math.round(n * 100) / 100;
 const fmtKg = n => (n == null || isNaN(n)) ? "" : String(round2(n)).replace(".", ",");
@@ -293,16 +327,42 @@ const WD = ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"];
 const fmtDate = iso => { const p = iso.split("-"); return `${p[2]}.${p[1]}.`; };
 const fmtDateLong = iso => { const p = iso.split("-"); return `${p[2]}.${p[1]}.${p[0]}`; };
 const fmtDateWd = iso => `${WD[isoToDate(iso).getDay()]} ${fmtDate(iso)}`;
-function blockWeek(iso, start) {
-  if (!start) return 1;
-  const days = Math.round((isoToDate(iso) - isoToDate(start)) / 86400000);
-  if (days < 0) return 1;
-  return (Math.floor(days / 7) % 6) + 1;
-}
 function phase(w) {
   if (w === 1) return { name: "Einstieg", hint: "Technik sauber, Arbeitsgewichte finden · RIR 3" };
   if (w === 6) return { name: "Deload", hint: "Halbe Satzzahl, gleiches Gewicht · RIR 3–4" };
   return { name: "Aufbau", hint: "Grundübungen RIR 1–2 · Isolation RIR 0–1" };
+}
+/* Runden: eine Runde = drei Trainings (A, B, C), ein Block = 6 Runden = 18 Trainings */
+const sortKey = s => s.date + (s.createdAt || "");
+function sessionsInBlock(sessions, blockStart, beforeKey) {
+  if (!blockStart) return 0;
+  return sessions.filter(s => sortKey(s) >= blockStart && (!beforeKey || sortKey(s) < beforeKey)).length;
+}
+function roundInfo(pos, shift) {
+  const p = (((pos + (shift || 0)) % 18) + 18) % 18;
+  return { round: Math.floor(p / 3) + 1, step: p % 3 + 1, pos: p };
+}
+/* Erinnerung: 48–72 Stunden Pause zwischen zwei Oberkörper-Einheiten */
+const isImported = s => /-csv$/.test(s.id || "");
+function usualStart(sessions) {
+  const mins = sessions.slice(0, 12).map(s => {
+    if (isImported(s)) return null;
+    const t = s.startedAt || s.createdAt; if (!t) return null;
+    const d = new Date(t); let m = d.getHours() * 60 + d.getMinutes();
+    if (!s.startedAt) m -= 75;
+    return m;
+  }).filter(m => m != null && m >= 300 && m <= 1380).sort((a, b) => a - b);
+  if (!mins.length) return 18 * 60;
+  return Math.round(mins[Math.floor(mins.length / 2)] / 30) * 30;
+}
+function nextSlot(last, startMin, now) {
+  if (!last) return null;
+  const end = last.createdAt && !isImported(last) ? new Date(last.createdAt) : new Date(isoToDate(last.date).getTime() + 19 * 3600000);
+  const ideal = isoToDate(dateToISO(end)); ideal.setDate(ideal.getDate() + 2); ideal.setHours(Math.floor(startMin / 60), startMin % 60, 0, 0);
+  const latest = isoToDate(dateToISO(end)); latest.setDate(latest.getDate() + 3); latest.setHours(23, 59, 0, 0);
+  const daysSince = (now - end.getTime()) / 86400000;
+  const state = daysSince > 14 ? "pause" : now < ideal.getTime() - 3 * 3600000 ? "rest" : now <= latest.getTime() ? "ready" : "late";
+  return { ideal, latest, end, state, daysSince };
 }
 function fmtRest(sec) { if (!sec) return "direkt weiter"; if (sec < 60) return `${sec} Sek`; return `${Math.floor(sec / 60)}:${pad2(sec % 60)} Min`; }
 function kgLabel(ex, kg) { if (ex && ex.bw) return kg ? `+${fmtKg(kg)} kg` : "ohne Zusatz"; return `${fmtKg(kg)} kg`; }
@@ -423,7 +483,7 @@ function sessionsFromCSV(rows, findIdByName, nowIso) {
   if (!rows.length) return [];
   const H = rows[0].map(h => h.trim().toLowerCase());
   const col = names => H.findIndex(h => names.includes(h));
-  const iD = col(["datum"]), iT = col(["tag"]), iW = col(["block-woche", "woche"]), iU = col(["übung", "uebung"]), iKg = col(["gewicht (kg)", "gewicht", "kg"]), iR = col(["wdh.", "wdh", "wiederholungen"]), iRir = col(["rir"]), iN = col(["notiz"]);
+  const iD = col(["datum"]), iT = col(["tag"]), iW = col(["runde", "block-woche", "woche"]), iU = col(["übung", "uebung"]), iKg = col(["gewicht (kg)", "gewicht", "kg"]), iR = col(["wdh.", "wdh", "wiederholungen"]), iRir = col(["rir"]), iN = col(["notiz"]);
   if (iD < 0 || iU < 0 || iR < 0) throw new Error("Unbekanntes CSV-Format: Spalten Datum, Übung und Wdh. werden gebraucht.");
   const byKey = new Map();
   for (const r of rows.slice(1)) {
@@ -450,7 +510,7 @@ function sessionsFromCSV(rows, findIdByName, nowIso) {
 /* ---------- state ---------- */
 const CFG = window.OKL_CONFIG || {};
 const SCOPE = "https://www.googleapis.com/auth/drive.file";
-const FILE_NAME = "Oberkoerper-Log.json";
+const FILE_NAME = "GymBuddy.json", OLD_FILE_NAME = "Oberkoerper-Log.json", SHEET_TITLE = "GymBuddy – Trainingslog";
 const LS = {
   get(k) { try { const v = localStorage.getItem("okl:" + k); return v ? JSON.parse(v) : null; } catch (e) { return null; } },
   set(k, v) { try { localStorage.setItem("okl:" + k, JSON.stringify(v)); } catch (e) { toast("Speicher des Browsers ist voll."); } },
@@ -496,7 +556,8 @@ function knownExtras() {
   return [...ids].map(id => ({ id, ...(extraInfo(id) || { name: id }) })).sort((a, b) => a.name.localeCompare(b.name, "de"));
 }
 function nextDay() { const s = S.sessions[0]; if (!s) return "A"; return DAY_KEYS[(DAY_KEYS.indexOf(s.day) + 1) % 3] || "A"; }
-const currentWeek = () => blockWeek(todayISO(), S.settings.blockStart);
+const blockPos = () => sessionsInBlock(S.sessions, S.settings.blockStart);
+const currentRound = () => roundInfo(blockPos(), S.settings.shift);
 function thisWeekCount() { const m = mondayOf(todayISO()); return S.sessions.filter(s => mondayOf(s.date) === m).length; }
 
 function saveSession(id, doc) { S.data.sessions[id] = doc; delete S.data.deleted[id]; commit(); }
@@ -556,7 +617,7 @@ async function gfetch(url, opts = {}) {
 }
 async function httpErr(r, what) { let m = ""; try { m = (await r.json()).error.message; } catch (e) {} return { http: r.status, msg: `${what}: ${r.status} ${m}`.trim() }; }
 async function findFile() {
-  const q = encodeURIComponent(`name = '${FILE_NAME}' and trashed = false`);
+  const q = encodeURIComponent(`(name = '${FILE_NAME}' or name = '${OLD_FILE_NAME}') and trashed = false`);
   const r = await gfetch(`https://www.googleapis.com/drive/v3/files?q=${q}&spaces=drive&orderBy=modifiedTime%20desc&fields=files(id)`);
   if (!r.ok) throw await httpErr(r, "Drive-Suche");
   const j = await r.json();
@@ -576,7 +637,7 @@ async function upload(id, content) {
     return id;
   }
   const b = "okl" + Date.now();
-  const body = `--${b}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${JSON.stringify({ name: FILE_NAME, mimeType: "application/json", description: "Daten der App Oberkörper-Log" })}\r\n--${b}\r\nContent-Type: application/json\r\n\r\n${content}\r\n--${b}--`;
+  const body = `--${b}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${JSON.stringify({ name: FILE_NAME, mimeType: "application/json", description: "Daten der App GymBuddy" })}\r\n--${b}\r\nContent-Type: application/json\r\n\r\n${content}\r\n--${b}--`;
   const r = await gfetch("https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id", { method: "POST", headers: { "Content-Type": `multipart/related; boundary=${b}` }, body });
   if (!r.ok) throw await httpErr(r, "Drive-Upload");
   return (await r.json()).id;
@@ -584,7 +645,7 @@ async function upload(id, content) {
 const SHEETS = "https://sheets.googleapis.com/v4/spreadsheets";
 const cellText = s => { s = String(s == null ? "" : s); return /^[=+\-@]/.test(s) ? "'" + s : s; };
 function sheetRows() {
-  const rows = [["Datum", "Wochentag", "Tag", "Block-Woche", "Übung", "Spontan", "Satz", "Gewicht (kg)", "Wdh.", "Volumen (kg)", "e1RM (kg)", "RIR", "Notiz"]];
+  const rows = [["Datum", "Wochentag", "Tag", "Runde", "Übung", "Spontan", "Satz", "Gewicht (kg)", "Wdh.", "Volumen (kg)", "e1RM (kg)", "RIR", "Notiz"]];
   for (const s of S.sessions.slice().reverse()) for (const x of s.exercises || []) x.sets.forEach((z, i) => {
     const b = e1rm(z.kg || 0, z.reps || 0);
     rows.push([s.date, WD[isoToDate(s.date).getDay()], s.day, s.week || "", cellText(x.name), x.extra ? "ja" : "", i + 1, z.kg || 0, z.reps || 0, round2((z.kg || 0) * (z.reps || 0)), b ? Math.round(b * 10) / 10 : "", i === x.sets.length - 1 && x.rir != null ? x.rir : "", i === 0 ? cellText(x.note || "") : ""]);
@@ -602,7 +663,7 @@ async function mirrorSheet() {
     else if (!r.ok) throw await httpErr(r, "Tabelle leeren");
   }
   if (!id) {
-    const r = await gfetch(SHEETS, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ properties: { title: "Oberkörper-Log – Trainingslog", locale: "de_DE" }, sheets: [{ properties: { title: "Trainingslog", gridProperties: { frozenRowCount: 1 } } }] }) });
+    const r = await gfetch(SHEETS, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ properties: { title: SHEET_TITLE, locale: "de_DE" }, sheets: [{ properties: { title: "Trainingslog", gridProperties: { frozenRowCount: 1 } } }] }) });
     if (!r.ok) throw await httpErr(r, "Tabelle anlegen");
     const j = await r.json(); id = j.spreadsheetId;
     const tab = j.sheets && j.sheets[0] ? j.sheets[0].properties.sheetId : 0;
@@ -612,6 +673,14 @@ async function mirrorSheet() {
   const r = await gfetch(`${SHEETS}/${id}/values/${encodeURIComponent("Trainingslog!A1")}?valueInputOption=USER_ENTERED`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ values: rows }) });
   if (!r.ok) throw await httpErr(r, "Tabelle schreiben");
   LS.set("sheetHash", h + "|" + id);
+}
+/* one-time: old files from "Oberkörper-Log" get the new name */
+async function renameToGymBuddy(fileId) {
+  try {
+    await gfetch(`https://www.googleapis.com/drive/v3/files/${fileId}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: FILE_NAME, description: "Daten der App GymBuddy" }) });
+    if (S.data.sheetId) await gfetch(`${SHEETS}/${S.data.sheetId}:batchUpdate`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ requests: [{ updateSpreadsheetProperties: { properties: { title: SHEET_TITLE }, fields: "title" } }] }) });
+    LS.set("renamedGB", true);
+  } catch (e) {}
 }
 let syncing = false, syncAgain = false;
 async function sync() {
@@ -624,10 +693,12 @@ async function sync() {
     if (remote === undefined || !fileId) { fileId = await findFile(); remote = fileId ? await download(fileId) : null; }
     const before = stable(S.data);
     const merged = remote ? mergeData(S.data, remote) : normalizeData(S.data);
+    const mp = migratePlan(merged.plan); if (mp) { merged.plan = mp; merged.planAt = Date.now(); }
     if (stable(merged) !== before) { S.data = merged; LS.set("data", S.data); derive(); refresh(); refreshWorkout(); }
     await mirrorSheet();
     if (!remote || stable(normalizeData(remote)) !== stable(S.data)) fileId = await upload(fileId, JSON.stringify(S.data));
     LS.set("fileId", fileId);
+    if (!LS.get("renamedGB")) await renameToGymBuddy(fileId);
     const now = Date.now(); LS.set("lastSync", now); S.sync.at = now; setSync("ok");
     if (S.tab === "plan") refresh();
   } catch (e) {
@@ -668,8 +739,8 @@ function freshExState(e, week, n) {
   return { meta: clone(e), sets: Array.from({ length: count }, () => ({ kg, reps: null, done: false, kgSet: false })), rir: null, note: "" };
 }
 function newDraft(day) {
-  const date = todayISO(), week = blockWeek(date, S.settings.blockStart);
-  S.draft = { day, date, week, ex: {}, order: planEx(day).map(e => e.id), editingId: null, startedAt: new Date().toISOString(), updatedAt: Date.now() };
+  const date = todayISO(), week = currentRound().round;
+  S.draft = { day, date, week, autoRound: week, ex: {}, order: planEx(day).map(e => e.id), editingId: null, startedAt: new Date().toISOString(), updatedAt: Date.now() };
   for (const e of planEx(day)) S.draft.ex[e.id] = freshExState(e, week);
   touch();
 }
@@ -680,7 +751,7 @@ function metaForSessionEx(se) {
   return { id: se.id, name: se.name, sets: se.sets.length, min: null, max: null, rest: 90, step: 2.5, extra: true, link: info.link || "" };
 }
 function draftFromSession(s) {
-  S.draft = { day: s.day, date: s.date, week: s.week || 1, ex: {}, order: [], editingId: s.id, startedAt: s.createdAt || new Date().toISOString(), updatedAt: Date.now() };
+  S.draft = { day: s.day, date: s.date, week: s.week || 1, ex: {}, order: [], editingId: s.id, startedAt: s.startedAt || s.createdAt || new Date().toISOString(), createdAt: s.createdAt || null, updatedAt: Date.now() };
   const toState = (meta, se) => ({ meta, sets: se.sets.map(x => ({ kg: x.kg, reps: x.reps, done: true, kgSet: true })), rir: se.rir == null ? null : se.rir, note: se.note || "" });
   for (const e of planEx(s.day)) {
     const se = (s.exercises || []).find(x => x.id === e.id);
@@ -728,7 +799,7 @@ function render() {
 function headerHTML() {
   const tabs = [["home", "Training"], ["prog", "Fortschritt"], ["hist", "Verlauf"], ["plan", "Plan"]], v = syncView();
   return `<header class="top"><div class="wrap">
-    <div class="brand"><h1>Oberkörper-Log</h1><button class="sync ${v.cls}" id="sync-pill" data-act="sync-pill">${esc(v.text)}</button></div>
+    <div class="brand"><h1>GymBuddy</h1><button class="sync ${v.cls}" id="sync-pill" data-act="sync-pill">${esc(v.text)}</button></div>
     <nav class="tabs" aria-label="Bereiche">${tabs.map(([k, l]) => `<button id="tab-${k}" data-act="tab" data-v="${k}" ${S.tab === k ? 'aria-current="page"' : ""}>${l}</button>`).join("")}</nav>
   </div></header>`;
 }
@@ -742,14 +813,8 @@ function confirmHTML(text, act, label, v) {
   return `<div class="inline-confirm" role="group"><span>${esc(text)}</span><button class="btn primary" id="cf-yes" data-act="${act}" ${v != null ? `data-v="${esc(v)}"` : ""}>${esc(label)}</button><button class="btn ghost" id="cf-no" data-act="confirm" data-v="">Abbrechen</button></div>`;
 }
 function homeHTML() {
-  const w = currentWeek(), ph = phase(w), nd = nextDay(), wc = thisWeekCount();
-  let h = `<section class="week" aria-label="Trainingsblock">
-    <div class="week-num num">${w}<span>/6</span></div>
-    <div class="week-phase">Block-Woche · ${ph.name}</div>
-    <div class="week-hint">${ph.hint}</div>
-    <div class="week-bar" aria-hidden="true">${[1, 2, 3, 4, 5, 6].map(i => `<i class="${i < w ? "past" : i === w ? "now" : ""}"></i>`).join("")}</div>
-    <div class="week-meta">Diese Woche: ${wc} ${wc === 1 ? "Einheit" : "Einheiten"} · Ziel 2–3${S.settings.blockStart ? "" : " · Der Block startet mit deinem ersten Training"}</div>
-  </section>`;
+  const ri = currentRound(), ph = phase(ri.round), nd = nextDay(), wc = thisWeekCount();
+  let h = "";
   if (S.draft) {
     const D = S.draft, c = draftDoneCount(D);
     h += `<section class="resume" aria-label="Laufendes Training">
@@ -757,7 +822,15 @@ function homeHTML() {
       ${S.confirm === "discard-home" ? confirmHTML("Training verwerfen? Nicht gespeicherte Sätze gehen verloren.", "discard-yes", "Verwerfen") :
         `<div class="row"><button class="btn primary" id="resume" data-act="resume">Weiter</button><button class="btn ghost" id="discard" data-act="confirm" data-v="discard-home">Verwerfen</button></div>`}
     </section>`;
-  }
+  } else h += reminderHTML();
+  h += `<section class="week" aria-label="Trainingsblock">
+    <div class="week-num num">${ri.round}<span>/6</span></div>
+    <div class="week-phase">Runde · ${ph.name}</div>
+    <div class="week-hint">${ph.hint}</div>
+    <div class="week-bar" aria-hidden="true">${[1, 2, 3, 4, 5, 6].map(r => `<span class="${r === 6 ? "deload" : ""}">${[0, 1, 2].map(k => { const i = (r - 1) * 3 + k; return `<i class="${i < ri.pos ? "done" : i === ri.pos ? "now" : ""}"></i>`; }).join("")}</span>`).join("")}</div>
+    <div class="week-legend" aria-hidden="true"><span>Einstieg</span><span>2</span><span>3</span><span>4</span><span>5</span><span>Deload</span></div>
+    <div class="week-meta">Nächstes Training: Nr. ${ri.step} von 3 in dieser Runde · Diese Woche: ${wc} ${wc === 1 ? "Einheit" : "Einheiten"}${S.settings.blockStart ? "" : " · Der Block startet mit deinem ersten Training"}</div>
+  </section>`;
   h += `<section class="days" aria-label="Trainingstag wählen">`;
   for (const k of DAY_KEYS) {
     const d = S.plan[k], last = S.sessions.find(s => s.day === k), isNext = k === nd && !S.draft;
@@ -772,6 +845,41 @@ function homeHTML() {
   h += `</section><p class="note-line">Tippe auf einen Tag: Die Übungen erscheinen mit dem Gewicht vom letzten Mal oder der nächsten Steigerung. Pro Satz nur noch Wiederholungen prüfen und abhaken.</p>`;
   return h;
 }
+function calLink(day, when) {
+  const f = d => d.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
+  const end = new Date(when.getTime() + 90 * 60000);
+  return "https://calendar.google.com/calendar/render?action=TEMPLATE&text=" + encodeURIComponent(`GymBuddy: Tag ${day} · ${S.plan[day].title}`) +
+    `&dates=${f(when)}/${f(end)}&details=` + encodeURIComponent("Nächstes Training mit GymBuddy. 48–72 Stunden Pause zwischen zwei Einheiten bringen den besten Trainingseffekt.");
+}
+function reminderHTML() {
+  const nd = nextDay(), d = S.plan[nd], startMin = usualStart(S.sessions), now = Date.now();
+  const slot = nextSlot(S.sessions[0], startMin, now);
+  const title = `Tag ${nd} · ${esc(d.title)}`;
+  if (!slot) return `<section class="next ready" aria-label="Nächstes Training"><span class="next-k">Nächstes Training</span><span class="next-h">${title}</span><p>Starte, wann es dir passt. Danach zeigt dir GymBuddy, wann der nächste Tag am besten passt.</p></section>`;
+  const day = x => `${WD[x.getDay()]} ${pad2(x.getDate())}.${pad2(x.getMonth() + 1)}.`;
+  const hm = x => `${pad2(x.getHours())}:${pad2(x.getMinutes())}`;
+  let when = slot.ideal;
+  if (when.getTime() < now + 30 * 60000) { when = new Date(now); when.setHours(Math.floor(startMin / 60), startMin % 60, 0, 0); if (when.getTime() < now + 30 * 60000) when.setDate(when.getDate() + 1); }
+  const cal = `<a class="btn ghost" id="cal" href="${calLink(nd, when)}" target="_blank" rel="noopener">${day(when)} ${hm(when)} in Kalender eintragen</a>`;
+  let head, text, extra = cal;
+  if (slot.state === "rest") {
+    const hrs = Math.max(1, Math.round((slot.ideal.getTime() - now) / 3600000));
+    head = `Erholung läuft · noch ${hrs < 24 ? hrs + " Std." : Math.round(hrs / 24) + (Math.round(hrs / 24) === 1 ? " Tag" : " Tage")}`;
+    text = `${title}: ideal ab ${day(slot.ideal)} um ca. ${hm(slot.ideal)} Uhr, spätestens ${day(slot.latest)}`;
+  } else if (slot.state === "ready") {
+    head = `Jetzt ideal: ${title}`;
+    text = `Seit deinem letzten Training am ${day(slot.end)} hattest du genug Erholung. Bis ${day(slot.latest)} ist der beste Zeitpunkt.`;
+  } else if (slot.state === "late") {
+    head = `Zeit für ${title}`;
+    text = `Dein letztes Training war am ${day(slot.end)}. Am besten trainierst du heute oder morgen, sonst lässt der Trainingsreiz nach.`;
+  } else {
+    head = "Lange Pause";
+    text = `Seit ${Math.floor(slot.daysSince)} Tagen kein Training. Starte am besten einen neuen Block mit einer Einstiegsrunde: Technik sauber, RIR 3.`;
+    extra = ri0() === 1 ? cal : `<button class="btn primary" id="pause-newblock" data-act="newblock-yes">Neuen Block starten</button>`;
+  }
+  return `<section class="next ${slot.state}" aria-label="Nächstes Training"><span class="next-k">Nächstes Training</span><span class="next-h">${head}</span><p>${text}</p><p class="note-line">48–72 Stunden Pause geben dem Oberkörper genug Erholung, ohne dass der Trainingsreiz verpufft.</p><div class="row">${extra}</div></section>`;
+}
+function ri0() { const r = currentRound(); return r.round === 1 && r.step === 1 ? 1 : 0; }
 function exTitle(e) {
   const l = safeLink(e.link);
   return l ? `<a class="exlink" href="${esc(l)}" target="_blank" rel="noopener">${esc(e.name)}<span aria-label="Anleitung öffnen">↗</span></a>` : esc(e.name);
@@ -783,7 +891,7 @@ function workoutHTML() {
     <div class="wtitle"><h1>Tag ${D.day} · ${esc(d ? d.title : "")}</h1>
       <div class="wmeta">
         <label class="chipbtn"><input type="date" id="w-date" data-f="date" value="${D.date}" aria-label="Datum"></label>
-        <button class="chipbtn" id="w-week" data-act="week" title="Block-Woche ändern">Woche ${D.week} · ${ph.name}</button>
+        <button class="chipbtn" id="w-week" data-act="week" title="Runde ändern">Runde ${D.week} · ${ph.name}</button>
       </div></div>
     <span class="badge" data-day="${D.day}" aria-hidden="true">${D.day}</span>
   </div></header>
@@ -920,7 +1028,7 @@ function historyHTML() {
     const sets = (s.exercises || []).reduce((a, x) => a + x.sets.length, 0);
     const vol = (s.exercises || []).reduce((a, x) => a + x.sets.reduce((b, z) => b + (z.kg || 0) * (z.reps || 0), 0), 0);
     const open = S.openHist === s.id;
-    h += `<button class="hrow" id="h-${esc(s.id)}" data-act="hist" data-v="${esc(s.id)}" aria-expanded="${open}"><span class="badge" data-day="${s.day}">${s.day}</span><span class="hd">${fmtDateWd(s.date)} · ${esc(S.plan[s.day] ? S.plan[s.day].title : "Tag " + s.day)}</span><span class="hs">Woche ${s.week || "–"} · ${(s.exercises || []).length} Übungen · ${sets} Sätze · ${Math.round(vol).toLocaleString("de-DE")} kg</span></button>`;
+    h += `<button class="hrow" id="h-${esc(s.id)}" data-act="hist" data-v="${esc(s.id)}" aria-expanded="${open}"><span class="badge" data-day="${s.day}">${s.day}</span><span class="hd">${fmtDateWd(s.date)} · ${esc(S.plan[s.day] ? S.plan[s.day].title : "Tag " + s.day)}</span><span class="hs">Runde ${s.week || "–"} · ${(s.exercises || []).length} Übungen · ${sets} Sätze · ${Math.round(vol).toLocaleString("de-DE")} kg</span></button>`;
     if (open) h += `<div class="hdetail"><div class="hlist">${(s.exercises || []).map(x => `<div><span>${x.extra ? "+ " : ""}${esc(x.name)}${x.note ? `<br><small>${esc(x.note)}</small>` : ""}</span><span>${esc(setsStr(x.sets, findPlanEx(x.id)))}${x.rir != null ? ` · RIR ${x.rir}` : ""}</span></div>`).join("")}</div>
       ${S.confirm === "del-" + s.id ? confirmHTML("Diese Einheit endgültig löschen?", "del-yes", "Löschen", s.id) :
         `<div class="row"><button class="btn ghost" id="h-edit" data-act="edit" data-v="${esc(s.id)}">Bearbeiten</button><button class="btn ghost" id="h-del" data-act="confirm" data-v="del-${esc(s.id)}">Löschen</button></div>`}</div>`;
@@ -935,13 +1043,13 @@ function planHTML() {
     <p class="status" id="drive-status">${esc(syncView().long)}</p>
     <div class="row">${CFG.googleClientId ? (linked() ? `<button class="btn primary" id="sync-now" data-act="sync-now">Jetzt synchronisieren</button>` : `<button class="btn primary" id="connect" data-act="connect">Mit Google verbinden</button>`) : ""}
       ${S.data.sheetId ? `<a class="btn ghost" href="https://docs.google.com/spreadsheets/d/${esc(S.data.sheetId)}/edit" target="_blank" rel="noopener">Tabelle öffnen</a>` : ""}</div>
-    <p class="note-line">Die App speichert alles zuerst auf dem Handy und überträgt es dann in die Datei „${FILE_NAME}“ in deinem Drive. Die Tabelle „Trainingslog“ ist nur zum Ansehen: Sie wird bei jedem Sync neu geschrieben.</p>
+    <p class="note-line">Die App speichert alles zuerst auf dem Handy und überträgt es dann in die Datei „${FILE_NAME}“ in deinem Drive. Die Tabelle „${SHEET_TITLE}“ ist nur zum Ansehen: Das Blatt „Trainingslog“ wird bei jedem Sync neu geschrieben.</p>
     ${linked() ? (S.confirm === "unlink" ? confirmHTML("Verbindung trennen? Deine Daten bleiben auf dem Handy und im Drive.", "unlink-yes", "Trennen") : `<div class="row"><button class="link" id="unlink" data-act="confirm" data-v="unlink">Verbindung trennen</button></div>`) : ""}
   </section>
   <section class="card"><h2>Trainingsblock</h2>
-    <p class="note-line">Heute: Woche ${currentWeek()} von 6 · ${phase(currentWeek()).name}. Woche 1 Einstieg, Wochen 2–5 Aufbau, Woche 6 Deload.</p>
-    <label class="field" for="blockstart">Blockstart (Montag)<input type="date" id="blockstart" data-pf="blockstart" value="${S.settings.blockStart || ""}"></label>
-    <div class="row"><button class="btn ghost" id="newblock" data-act="newblock">Neuen Block ab dieser Woche</button></div>
+    <p class="note-line">Eine Runde ist einmal A, B und C. Runde 1 Einstieg, Runden 2–5 Aufbau, Runde 6 Deload mit halber Satzzahl. Als Nächstes: Runde ${currentRound().round} von 6 · ${phase(currentRound().round).name}, Training ${currentRound().step} von 3.</p>
+    <p class="note-line">${S.settings.blockStart ? `Block läuft seit ${fmtDateLong(S.settings.blockStart.slice(0, 10))} · ${blockPos()} ${blockPos() === 1 ? "Training" : "Trainings"}.` : "Der Block startet mit deinem ersten gespeicherten Training."} Nach mehr als zwei Wochen Pause schlägt GymBuddy einen neuen Block vor.</p>
+    ${S.confirm === "newblock" ? confirmHTML("Neuen Block mit Einstiegsrunde starten? Das nächste Training zählt dann als Runde 1.", "newblock-yes", "Neuen Block starten") : `<div class="row"><button class="btn ghost" id="newblock" data-act="confirm" data-v="newblock">Neuen Block starten</button></div>`}
   </section>
   <section class="card"><h2>Übungen</h2>
     <div class="seg" role="group" aria-label="Tag">${DAY_KEYS.map(k => `<button id="pe-day-${k}" data-act="pe-day" data-v="${k}" aria-pressed="${P.day === k}">Tag ${k}</button>`).join("")}</div>
@@ -1078,8 +1186,11 @@ function finishWorkout() {
   if (!exercises.length) { toast("Noch kein Satz erledigt."); return; }
   const now = new Date().toISOString();
   const id = D.editingId || `${D.date}-${D.day}-${Date.now().toString(36)}`;
-  if (!S.settings.blockStart) { S.data.settings = Object.assign({}, S.data.settings, { blockStart: mondayOf(D.date) }); S.data.settingsAt = Date.now(); }
-  saveSession(id, { date: D.date, day: D.day, week: D.week, exercises, createdAt: D.editingId ? D.startedAt : now, updatedAt: now });
+  const set = Object.assign({}, S.data.settings); let setChanged = false;
+  if (!set.blockStart) { set.blockStart = D.date; setChanged = true; }
+  if (!D.editingId && D.autoRound && D.week !== D.autoRound) { set.shift = (set.shift || 0) + (D.week - D.autoRound) * 3; setChanged = true; }
+  if (setChanged) { S.data.settings = set; S.data.settingsAt = Date.now(); }
+  saveSession(id, { date: D.date, day: D.day, week: D.week, exercises, startedAt: D.startedAt, createdAt: D.editingId ? (D.createdAt || D.startedAt) : now, updatedAt: now });
   const n = exercises.reduce((a, x) => a + x.sets.length, 0), wasEdit = !!D.editingId;
   discardDraft(); stopTimer(); goHome();
   toast(wasEdit ? "Änderungen gespeichert" : `Training gespeichert · ${n} Sätze`);
@@ -1090,13 +1201,13 @@ function downloadFile(name, content, type) {
   setTimeout(() => URL.revokeObjectURL(url), 2000);
 }
 function exportCSV() {
-  const rows = [["Datum", "Tag", "Block-Woche", "Übung", "Satz", "Gewicht (kg)", "Wdh.", "e1RM (kg)", "RIR", "Notiz"]];
+  const rows = [["Datum", "Tag", "Runde", "Übung", "Satz", "Gewicht (kg)", "Wdh.", "e1RM (kg)", "RIR", "Notiz"]];
   for (const s of S.sessions.slice().reverse()) for (const x of s.exercises || []) x.sets.forEach((z, i) => {
     const b = e1rm(z.kg || 0, z.reps || 0);
     rows.push([fmtDateLong(s.date), s.day, s.week || "", x.name, i + 1, fmtKg(z.kg || 0), z.reps, b ? fmtKg(Math.round(b * 10) / 10) : "", i === x.sets.length - 1 && x.rir != null ? x.rir : "", i === 0 ? (x.note || "") : ""]);
   });
   const cell = v => { const s = String(v == null ? "" : v); return /[";\r\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s; };
-  downloadFile(`oberkoerper-log-${todayISO()}.csv`, "﻿" + rows.map(r => r.map(cell).join(";")).join("\r\n"), "text/csv;charset=utf-8");
+  downloadFile(`gymbuddy-${todayISO()}.csv`, "﻿" + rows.map(r => r.map(cell).join(";")).join("\r\n"), "text/csv;charset=utf-8");
 }
 function importText(text) {
   const t = text.trim();
@@ -1114,7 +1225,7 @@ function importText(text) {
     S.data.sessions[id] = s; delete S.data.deleted[id];
     for (const x of s.exercises) if (x.extra && !S.data.extras[x.id]) S.data.extras[x.id] = { name: x.name, link: "", at: Date.now() };
   }
-  if (!S.settings.blockStart && list.length) { const firstDate = list.map(s => s.date).sort()[0]; S.data.settings = Object.assign({}, S.data.settings, { blockStart: mondayOf(firstDate) }); S.data.settingsAt = Date.now(); }
+  if (!S.settings.blockStart && list.length) { const firstDate = list.map(s => s.date).sort()[0]; S.data.settings = Object.assign({}, S.data.settings, { blockStart: firstDate }); S.data.settingsAt = Date.now(); }
   commit();
   return added;
 }
@@ -1154,7 +1265,17 @@ document.addEventListener("click", ev => {
     case "discard-yes": discardDraft(); stopTimer(); goHome(); toast("Training verworfen"); return;
     case "home": goHome(); return;
     case "save": finishWorkout(); syncFromTap(false); return;
-    case "week": { const D = S.draft; D.week = D.week % 6 + 1; touch(); b.textContent = `Woche ${D.week} · ${phase(D.week).name}`; return; }
+    case "week": {
+      const D = S.draft; D.week = D.week % 6 + 1;
+      for (const e of draftList()) {
+        const st = D.ex[e.id];
+        if (e.extra || st.sets.some(x => x.done)) continue;
+        const n = D.week === 6 ? Math.ceil(e.sets / 2) : e.sets;
+        while (st.sets.length > n) st.sets.pop();
+        while (st.sets.length < n) { const l = st.sets[st.sets.length - 1]; st.sets.push({ kg: l ? l.kg : null, reps: null, done: false, kgSet: false }); }
+      }
+      touch(); const y = window.scrollY; render(); window.scrollTo(0, y); return;
+    }
     case "t-15": T.endAt = Math.max(Date.now(), T.endAt - 15000); tickTimer(); return;
     case "t+15": if (T.fired) { T.fired = false; T.endAt = Date.now(); } T.endAt += 15000; T.total = Math.max(T.total, Math.ceil((T.endAt - Date.now()) / 1000)); if (!T.iv) T.iv = setInterval(tickTimer, 250); tickTimer(); return;
     case "tstop": stopTimer(); return;
@@ -1165,17 +1286,17 @@ document.addEventListener("click", ev => {
     case "hist": S.openHist = S.openHist === v ? null : v; S.confirm = null; render(); return;
     case "edit": { const s = S.sessions.find(x => x.id === v); if (!s) return; if (S.draft) { toast("Erst das laufende Training speichern oder verwerfen."); return; } draftFromSession(s); openWorkout(); return; }
     case "del-yes": deleteSession(v); S.confirm = null; S.openHist = null; render(); toast("Einheit gelöscht"); syncFromTap(false); return;
-    case "newblock": { const m = mondayOf(todayISO()); saveSettings(Object.assign({}, S.settings, { blockStart: m })); render(); toast(`Neuer Block ab ${fmtDateLong(m)}`); syncFromTap(false); return; }
+    case "newblock-yes": { saveSettings(Object.assign({}, S.settings, { blockStart: todayISO() + new Date().toISOString(), shift: 0 })); S.confirm = null; render(); toast("Neuer Block: Das nächste Training ist Runde 1 · Einstieg"); syncFromTap(false); return; }
     case "pe-day": S.pe.day = v; S.confirm = null; render(); return;
     case "pe-up": case "pe-down": { const i = Number(b.closest(".pe-item").dataset.idx), L = S.pe.plan[S.pe.day].ex, j = act === "pe-up" ? i - 1 : i + 1; if (j < 0 || j >= L.length) return; [L[i], L[j]] = [L[j], L[i]]; S.pe.dirty = true; render(); return; }
     case "pe-del": S.pe.plan[S.pe.day].ex.splice(Number(v), 1); S.pe.dirty = true; S.confirm = null; render(); return;
     case "pe-add": S.pe.plan[S.pe.day].ex.push({ id: "x" + Date.now().toString(36), name: "Neue Übung", sets: 3, min: 10, max: 12, rest: 90, step: 2.5 }); S.pe.dirty = true; render(); setTimeout(() => { const ins = document.querySelectorAll('.pe-item input[data-pf="name"]'); const l = ins[ins.length - 1]; if (l) { l.focus(); l.select(); } }, 0); return;
     case "pe-revert": S.pe = null; render(); return;
-    case "pe-save": { const p = sanitizePlan(clone(S.pe.plan)), doc = {}; for (const k of DAY_KEYS) doc[k] = { ex: p[k].ex }; savePlanDoc(doc); S.pe = null; render(); toast("Plan gespeichert"); syncFromTap(false); return; }
+    case "pe-save": { const p = sanitizePlan(clone(S.pe.plan)), doc = { v: PLAN_V }; for (const k of DAY_KEYS) doc[k] = { ex: p[k].ex }; savePlanDoc(doc); S.pe = null; render(); toast("Plan gespeichert"); syncFromTap(false); return; }
     case "pe-reset": S.data.plan = null; S.data.planAt = Date.now(); commit(); S.pe = null; S.confirm = null; render(); toast("Ursprünglicher Plan wiederhergestellt"); syncFromTap(false); return;
     case "import": $("#import-file").click(); return;
     case "export-csv": exportCSV(); return;
-    case "export-json": downloadFile(`oberkoerper-log-sicherung-${todayISO()}.json`, JSON.stringify(S.data, null, 1), "application/json"); return;
+    case "export-json": downloadFile(`gymbuddy-sicherung-${todayISO()}.json`, JSON.stringify(S.data, null, 1), "application/json"); return;
   }
   const c = setCtx(b); if (!c) return;
   const { e, st, s, i, id } = c;
@@ -1184,8 +1305,8 @@ document.addEventListener("click", ev => {
     const step = e.step > 0 ? e.step : 2.5;
     s.kg = Math.max(0, round2((s.kg || 0) + (act === "kg+" ? step : -step))); s.kgSet = true; propagate(st, i);
   } else if (act === "r-" || act === "r+") {
-    const base = s.reps != null ? s.reps : repPlaceholder(e, ent, rec, i);
-    s.reps = Math.max(0, base + (act === "r+" ? 1 : -1));
+    if (s.reps == null) s.reps = repPlaceholder(e, ent, rec, i);
+    else s.reps = Math.max(0, s.reps + (act === "r+" ? 1 : -1));
   } else if (act === "tick") {
     if (s.done) { s.done = false; s.reps = null; }
     else {
@@ -1231,7 +1352,6 @@ document.addEventListener("input", ev => {
 });
 document.addEventListener("change", ev => {
   const t = ev.target;
-  if (t.dataset.pf === "blockstart" && t.value) { const m = mondayOf(t.value); saveSettings(Object.assign({}, S.settings, { blockStart: m })); toast(`Blockstart: ${fmtDateLong(m)}`); needsRender = true; }
   if (t.dataset.xl) {
     const id = t.dataset.xl, l = t.value.trim();
     if (l && !safeLink(l)) { toast("Bitte eine Adresse mit https:// eingeben."); return; }
@@ -1249,6 +1369,7 @@ document.addEventListener("change", ev => {
 document.addEventListener("keydown", ev => { if (ev.key === "Enter" && ev.target.id === "addex-name") { ev.preventDefault(); addExtra(); } });
 
 /* ---------- boot ---------- */
+{ const mp = migratePlan(S.data.plan); if (mp) { S.data.plan = mp; S.data.planAt = Date.now(); LS.set("data", S.data); } }
 derive();
 render();
 if (hasToken()) sync(); else setSync(linked() ? "auth" : "off");
