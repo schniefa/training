@@ -1,7 +1,7 @@
 {
-  "name": "Oberkörper-Log",
-  "short_name": "Oberkörper",
-  "description": "Trainings-Tracker für den Oberkörper-Plan A/B/C",
+  "name": "GymBuddy",
+  "short_name": "GymBuddy",
+  "description": "Trainings-Tracker für den Plan A/B/C",
   "lang": "de",
   "start_url": "./",
   "scope": "./",
