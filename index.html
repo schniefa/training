@@ -367,16 +367,23 @@ function usualStart(sessions) {
   const mins = sessions.slice(0, 12).map(s => {
     if (isImported(s)) return null;
     const t = s.startedAt || s.createdAt; if (!t) return null;
-    const d = new Date(t); let m = d.getHours() * 60 + d.getMinutes();
+    const d = new Date(t);
+    if (dateToISO(d) !== s.date) return null; /* nachgetragen: Uhrzeit sagt nichts über die Trainingszeit */
+    let m = d.getHours() * 60 + d.getMinutes();
     if (!s.startedAt) m -= 75;
     return m;
   }).filter(m => m != null && m >= 300 && m <= 1380).sort((a, b) => a - b);
   if (!mins.length) return 18 * 60;
   return Math.round(mins[Math.floor(mins.length / 2)] / 30) * 30;
 }
+/* Maßgeblich ist das Trainingsdatum, nicht der Zeitpunkt des Eintragens */
+function trainingEnd(last, startMin) {
+  if (last.createdAt && !isImported(last)) { const c = new Date(last.createdAt); if (dateToISO(c) === last.date) return c; }
+  const d = isoToDate(last.date); d.setMinutes(Math.min(23 * 60, startMin + 75)); return d;
+}
 function nextSlot(last, startMin, now) {
   if (!last) return null;
-  const end = last.createdAt && !isImported(last) ? new Date(last.createdAt) : new Date(isoToDate(last.date).getTime() + 19 * 3600000);
+  const end = trainingEnd(last, startMin);
   const ideal = isoToDate(dateToISO(end)); ideal.setDate(ideal.getDate() + 2); ideal.setHours(Math.floor(startMin / 60), startMin % 60, 0, 0);
   const latest = isoToDate(dateToISO(end)); latest.setDate(latest.getDate() + 3); latest.setHours(23, 59, 0, 0);
   const daysSince = (now - end.getTime()) / 86400000;
