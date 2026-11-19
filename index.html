@@ -295,9 +295,13 @@ td { padding: 6px 8px 6px 0; border-top: 1px solid var(--line); vertical-align: 
 .ready-v .t-1 { color: var(--fg); font-weight: 600; }
 .mbars { display: grid; gap: 8px; }
 .mrow { display: grid; grid-template-columns: 84px minmax(0, 1fr) 34px; gap: 8px; align-items: center; font-size: 13px; }
-.mt { position: relative; height: 14px; background: var(--surface-2); border-radius: 4px; overflow: hidden; }
-.band { position: absolute; top: 0; bottom: 0; background: var(--good-soft); }
-.mb { position: absolute; left: 0; top: 4px; height: 6px; border-radius: 0 4px 4px 0; }
+.mt { position: relative; height: 18px; background: var(--surface-2); border-radius: 4px; overflow: hidden; }
+.band { position: absolute; top: 0; bottom: 0; background: var(--good-soft); background: color-mix(in srgb, var(--good) 18%, transparent); border-left: 2px dashed var(--good); border-right: 2px dashed var(--good); }
+.mb { position: absolute; left: 0; top: 4px; height: 10px; border-radius: 0 4px 4px 0; min-width: 3px; }
+.maxis { position: relative; height: 14px; font-size: 11px; color: var(--muted); }
+.maxis span { position: absolute; transform: translateX(-50%); }
+.maxis span:first-child { transform: none; }
+.legend i.bandkey { background: color-mix(in srgb, var(--good) 18%, transparent); border: 2px dashed var(--good); width: 14px; height: 10px; box-sizing: border-box; }
 .mv { text-align: right; }
 .trlist { display: grid; }
 .trrow { display: grid; grid-template-columns: minmax(0, 1fr) 72px auto; gap: 2px 10px; align-items: center; padding: 8px 0; border-top: 1px solid var(--line); }
@@ -536,7 +540,7 @@ function numberLabels(list) {
   return out;
 }
 /* ----- data model + merge (Drive sync) ----- */
-function emptyData() { return { v: 1, plan: null, planAt: 0, settings: { blockStart: null }, settingsAt: 0, sessions: {}, deleted: {}, extras: {}, sheetId: null, garmin: null }; }
+function emptyData() { return { v: 1, plan: null, planAt: 0, settings: { blockStart: null }, settingsAt: 0, sessions: {}, deleted: {}, extras: {}, sheetId: null, garmin: null, gm: null }; }
 function normalizeData(d) {
   const e = emptyData();
   if (!d || typeof d !== "object") return e;
@@ -552,6 +556,7 @@ function mergeData(a, b) {
   const sa = (b.settingsAt || 0) > (a.settingsAt || 0) ? b : a;
   o.settings = sa.settings; o.settingsAt = sa.settingsAt || 0;
   o.sheetId = a.sheetId || b.sheetId || null;
+  o.gm = mergeGm(a.gm, b.gm);
   o.garmin = ((b.garmin && b.garmin.at) || 0) > ((a.garmin && a.garmin.at) || 0) ? b.garmin : a.garmin; /* Garmin-Verbindung: neueste gewinnt */
   for (const src of [a.deleted, b.deleted]) for (const id in src) o.deleted[id] = Math.max(o.deleted[id] || 0, src[id] || 0);
   for (const src of [a.extras, b.extras]) for (const id in src) { const cur = o.extras[id]; if (!cur || (src[id].at || 0) > (cur.at || 0)) o.extras[id] = src[id]; }
@@ -682,7 +687,7 @@ function hrSummary(values, startMs, endMs, zones) {
     sum += p[1]; mx = Math.max(mx, p[1]);
     if (zones) { let k = 0; for (let j = 0; j < 5; j++) if (p[1] >= zones.floors[j]) k = j + 1; z[k] += (i < iv.length ? iv[i] : med) / 60000; }
   });
-  return { avg: Math.round(sum / pts.length), max: mx, n: pts.length, step: Math.round(med / 1000), zones: zones ? z.map(x => Math.round(x)) : null, src: "garmin" };
+  return { avg: Math.round(sum / pts.length), max: mx, n: pts.length, step: Math.round(med / 1000), zones: zones ? z.map(x => Math.round(x)) : null, src: "garmin", t0: pts[0][0], pts: pts.slice(0, 400).map(p => Math.round(p[1])) };
 }
 function parseReady(r) {
   const o = {}, ok = x => x && !x._error;
@@ -807,6 +812,87 @@ function trendInfo(pts) {
   return { first, last, pct, stall };
 }
 
+/* ----- Garmin-Daten dauerhaft speichern (wandern mit der Drive-Datei) ----- */
+const addDaysIso = (iso, n) => { const d = isoToDate(iso); d.setDate(d.getDate() + n); return dateToISO(d); };
+const GM_DAY_KEYS = ["resting", "resting7", "hrvLast", "hrvWeek", "hrvStatus", "sleepSec", "sleepScore", "bbWake", "bbHigh", "bb", "steps", "stress"];
+/* Rohdaten eines Tages (Tageszusammenfassung + HRV) auf die Werte reduzieren, die GymBuddy nutzt */
+function gmDayFromRaw(r) {
+  const o = {
+    resting: num(r.restingHeartRate), resting7: num(r.lastSevenDaysAvgRestingHeartRate), hrvLast: num(r.lastNightAvg), hrvWeek: num(r.weeklyAvg),
+    hrvStatus: typeof r.status === "string" ? r.status : null, sleepSec: num(r.sleepingSeconds != null ? r.sleepingSeconds : r.sleepTimeSeconds),
+    bbWake: num(r.bodyBatteryAtWakeTime), bbHigh: num(r.bodyBatteryHighestValue), steps: num(r.totalSteps), stress: num(r.averageStressLevel)
+  };
+  if (o.stress != null && o.stress < 0) o.stress = null;
+  return o;
+}
+/* Neue Werte in einen gespeicherten Tag übernehmen; liefert true, wenn sich etwas geändert hat */
+function gmPutDay(store, date, vals, now) {
+  const cur = store.days[date] || {}, next = Object.assign({}, cur);
+  for (const k of GM_DAY_KEYS) if (vals[k] != null && vals[k] !== "") next[k] = vals[k];
+  const same = GM_DAY_KEYS.every(k => cur[k] === next[k]);
+  if (same && store.days[date]) return false;
+  if (GM_DAY_KEYS.every(k => next[k] == null)) return false;
+  next.at = now; store.days[date] = next; return true;
+}
+const GM_ACT_KEYS = ["name", "type", "date", "start", "dur", "avgHR", "maxHR", "kcal", "te", "load", "dist"];
+/* Abgerufene Aktivitäten und Tage einsortieren; im neu geladenen Zeitraum gelöschte Aktivitäten bekommen eine Löschmarke */
+function gmMergeFetched(store, f, now) {
+  let changed = false;
+  for (const d in f.days || {}) if (gmPutDay(store, d, f.days[d], now)) changed = true;
+  if (f.acts) {
+    const ids = new Set();
+    for (const a of f.acts) {
+      ids.add(a.id); const cur = store.acts[a.id], next = { id: a.id };
+      GM_ACT_KEYS.forEach(k => { if (a[k] != null) next[k] = a[k]; });
+      if (!cur || cur.del || GM_ACT_KEYS.some(k => cur[k] !== next[k])) { next.at = now; store.acts[a.id] = next; changed = true; }
+    }
+    if (f.complete) for (const id in store.acts) { const a = store.acts[id]; if (!a.del && a.date >= f.start && a.date <= f.end && !ids.has(id)) { store.acts[id] = { id, del: true, date: a.date, at: now }; changed = true; } }
+  }
+  const c = store.cov, st = f.start, en = f.end;
+  let cov;
+  if (c && st >= c.from && st <= addDaysIso(c.to, 1)) cov = { from: c.from, to: en > c.to ? en : c.to };
+  else if (c && st < c.from && en >= addDaysIso(c.from, -1)) cov = { from: st, to: en > c.to ? en : c.to };
+  else cov = { from: st, to: en };
+  if (!c || c.from !== cov.from || c.to !== cov.to) { store.cov = cov; changed = true; }
+  return changed;
+}
+/* Ab wann neu geladen werden muss: Bekanntes nur die letzten 3 Tage auffrischen (Garmin rechnet nach) */
+function gmFetchStart(cov, from) {
+  if (cov && cov.from <= from && cov.to >= addDaysIso(from, -1)) { const s = addDaysIso(cov.to, -3); return s > from ? s : from; }
+  return from;
+}
+function mergeGm(a, b) {
+  if (!a) return b || null; if (!b) return a;
+  const o = { days: Object.assign({}, a.days), acts: Object.assign({}, a.acts), zones: null, cov: null };
+  for (const d in b.days || {}) if (!o.days[d] || (b.days[d].at || 0) > (o.days[d].at || 0)) o.days[d] = b.days[d];
+  for (const id in b.acts || {}) if (!o.acts[id] || (b.acts[id].at || 0) > (o.acts[id].at || 0)) o.acts[id] = b.acts[id];
+  o.zones = ((b.zones && b.zones.at) || 0) > ((a.zones && a.zones.at) || 0) ? b.zones : a.zones;
+  const ca = a.cov, cb = b.cov;
+  o.cov = ca && cb ? { from: ca.from < cb.from ? ca.from : cb.from, to: ca.to > cb.to ? ca.to : cb.to } : (ca || cb || null);
+  return o;
+}
+const gmActsList = (store, from, to) => Object.values((store && store.acts) || {}).filter(a => !a.del && a.date >= from && a.date <= to).sort((x, y) => String(y.start).localeCompare(String(x.start)));
+/* Tabellenblätter für Google Sheets */
+function garminDayRows(store) {
+  const rows = [["Datum", "Wochentag", "Ruhepuls", "Ruhepuls Ø 7 Tage", "HRV nachts (ms)", "HRV Ø Woche (ms)", "HRV-Status", "Schlaf (h)", "Schlaf-Score", "Body Battery morgens", "Body Battery max", "Schritte", "Stress Ø", "Erholung"]];
+  const lv = { good: "gut", ok: "normal", low: "wenig" }, st = { BALANCED: "ausgeglichen", UNBALANCED: "unausgeglichen", LOW: "niedrig", POOR: "niedrig" };
+  const days = (store && store.days) || {};
+  for (const d of Object.keys(days).sort().reverse()) {
+    const x = days[d], r = readiness(x), v = k => x[k] != null ? x[k] : "";
+    rows.push([d, WD[isoToDate(d).getDay()], v("resting"), v("resting7"), v("hrvLast"), v("hrvWeek"), x.hrvStatus ? (st[String(x.hrvStatus).toUpperCase()] || x.hrvStatus) : "",
+      x.sleepSec != null ? Math.round(x.sleepSec / 360) / 10 : "", v("sleepScore"), v("bbWake"), v("bbHigh"), v("steps"), v("stress"), r ? lv[r.level] : ""]);
+  }
+  return rows;
+}
+function garminActRows(store) {
+  const rows = [["Datum", "Wochentag", "Start", "Sportart", "Name", "Dauer (Min)", "Ø Puls", "Max Puls", "kcal", "Aerober TE", "Trainingslast", "Distanz (km)"]];
+  for (const a of gmActsList(store, "0000-00-00", "9999-99-99")) {
+    const m = String(a.start || "").match(/[T ](\d{2}:\d{2})/), v = x => x != null ? x : "";
+    rows.push([a.date, WD[isoToDate(a.date).getDay()], m ? m[1] : "", sportLabel(a.type), cellText(a.name || ""), a.dur ? Math.round(a.dur / 60) : "", v(a.avgHR != null ? Math.round(a.avgHR) : null), v(a.maxHR),
+      v(a.kcal != null ? Math.round(a.kcal) : null), a.te != null ? Math.round(a.te * 10) / 10 : "", a.load != null ? Math.round(a.load) : "", a.dist ? Math.round(a.dist / 100) / 10 : ""]);
+  }
+  return rows;
+}
 /*PURE-END*/
 
 /* ---------- state ---------- */
@@ -956,24 +1042,43 @@ function sheetRows() {
   return rows;
 }
 function hashStr(s) { let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return (h >>> 0).toString(36); }
+/* Tabellenblätter: Trainingslog immer, Garmin-Blätter sobald Garmin-Daten gespeichert sind */
+function sheetTabs() {
+  const tabs = [{ title: "Trainingslog", rows: sheetRows() }], g = S.data.gm;
+  if (g && (Object.keys(g.days || {}).length || Object.keys(g.acts || {}).length)) {
+    tabs.push({ title: "Garmin-Tage", rows: garminDayRows(g) }, { title: "Garmin-Aktivitäten", rows: garminActRows(g) });
+  }
+  return tabs;
+}
 async function mirrorSheet() {
-  const rows = sheetRows(), h = hashStr(JSON.stringify(rows));
-  let id = S.data.sheetId;
+  const tabs = sheetTabs(), h = hashStr(JSON.stringify(tabs));
+  let id = S.data.sheetId, have = null;
   if (id && LS.get("sheetHash") === h + "|" + id) return;
+  const J = { "Content-Type": "application/json" }, bold = sid => ({ repeatCell: { range: { sheetId: sid, startRowIndex: 0, endRowIndex: 1 }, cell: { userEnteredFormat: { textFormat: { bold: true } } }, fields: "userEnteredFormat.textFormat.bold" } });
   if (id) {
-    const r = await gfetch(`${SHEETS}/${id}/values/${encodeURIComponent("Trainingslog!A:Z")}:clear`, { method: "POST" });
+    const r = await gfetch(`${SHEETS}/${id}?fields=${encodeURIComponent("sheets.properties(sheetId,title)")}`);
     if (r.status === 404 || r.status === 400 || r.status === 403) id = null;
-    else if (!r.ok) throw await httpErr(r, "Tabelle leeren");
+    else if (!r.ok) throw await httpErr(r, "Tabelle lesen");
+    else have = ((await r.json()).sheets || []).map(x => x.properties.title);
   }
   if (!id) {
-    const r = await gfetch(SHEETS, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ properties: { title: SHEET_TITLE, locale: "de_DE" }, sheets: [{ properties: { title: "Trainingslog", gridProperties: { frozenRowCount: 1 } } }] }) });
+    const r = await gfetch(SHEETS, { method: "POST", headers: J, body: JSON.stringify({ properties: { title: SHEET_TITLE, locale: "de_DE" }, sheets: tabs.map(t => ({ properties: { title: t.title, gridProperties: { frozenRowCount: 1 } } })) }) });
     if (!r.ok) throw await httpErr(r, "Tabelle anlegen");
-    const j = await r.json(); id = j.spreadsheetId;
-    const tab = j.sheets && j.sheets[0] ? j.sheets[0].properties.sheetId : 0;
-    try { await gfetch(`${SHEETS}/${id}:batchUpdate`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ requests: [{ repeatCell: { range: { sheetId: tab, startRowIndex: 0, endRowIndex: 1 }, cell: { userEnteredFormat: { textFormat: { bold: true } } }, fields: "userEnteredFormat.textFormat.bold" } }] }) }); } catch (e) {}
+    const j = await r.json(); id = j.spreadsheetId; have = tabs.map(t => t.title);
+    try { await gfetch(`${SHEETS}/${id}:batchUpdate`, { method: "POST", headers: J, body: JSON.stringify({ requests: (j.sheets || []).map(x => bold(x.properties.sheetId)) }) }); } catch (e) {}
     S.data.sheetId = id; LS.set("data", S.data);
   }
-  const r = await gfetch(`${SHEETS}/${id}/values/${encodeURIComponent("Trainingslog!A1")}?valueInputOption=USER_ENTERED`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ values: rows }) });
+  const missing = tabs.filter(t => !have.includes(t.title));
+  if (missing.length) {
+    const r = await gfetch(`${SHEETS}/${id}:batchUpdate`, { method: "POST", headers: J, body: JSON.stringify({ requests: missing.map(t => ({ addSheet: { properties: { title: t.title, gridProperties: { frozenRowCount: 1 } } } })) }) });
+    if (!r.ok) throw await httpErr(r, "Blatt anlegen");
+    const j = await r.json();
+    try { await gfetch(`${SHEETS}/${id}:batchUpdate`, { method: "POST", headers: J, body: JSON.stringify({ requests: (j.replies || []).filter(x => x.addSheet).map(x => bold(x.addSheet.properties.sheetId)) }) }); } catch (e) {}
+  }
+  const q = t => `'${t.title.replace(/'/g, "''")}'`;
+  let r = await gfetch(`${SHEETS}/${id}/values:batchClear`, { method: "POST", headers: J, body: JSON.stringify({ ranges: tabs.map(t => q(t) + "!A:Z") }) });
+  if (!r.ok) throw await httpErr(r, "Tabelle leeren");
+  r = await gfetch(`${SHEETS}/${id}/values:batchUpdate`, { method: "POST", headers: J, body: JSON.stringify({ valueInputOption: "USER_ENTERED", data: tabs.map(t => ({ range: q(t) + "!A1", values: t.rows })) }) });
   if (!r.ok) throw await httpErr(r, "Tabelle schreiben");
   LS.set("sheetHash", h + "|" + id);
 }
@@ -1439,6 +1544,7 @@ function planHTML() {
     <div class="row"><button class="btn primary" id="gm-save" data-act="gm-save" ${GM.testing ? "disabled" : ""}>${GM.testing ? "Teste …" : "Speichern & testen"}</button>${gmOn() && !GM.testing ? `<button class="btn ghost" id="gm-diag" data-act="gm-diag">Diagnose</button>` : ""}</div>
     ${gmMsgHTML()}
     <p class="note-line">GymBuddy holt über dein Apps-Script den Tagespuls, Schlaf, HRV, Body Battery und die Aktivitäten deiner Uhr. Ein Training auf der Uhr musst du dafür nicht starten. Die Daten erscheinen, sobald die Uhr mit Garmin Connect synchronisiert hat. Mit Google Drive verbunden, gilt die Verbindung auch auf deinen anderen Geräten.</p>
+    ${gmStoreNote()}
     ${gmOn() ? (S.confirm === "gm-remove" ? confirmHTML("Garmin-Verbindung auf allen Geräten entfernen?", "gm-remove-yes", "Entfernen") : `<div class="row"><button class="link" id="gm-remove" data-act="confirm" data-v="gm-remove">Verbindung entfernen</button></div>`) : ""}
   </section>
   <section class="card"><h2>Pausentimer</h2><label class="toggle" for="pref-sound"><input type="checkbox" id="pref-sound" data-pf="sound" ${prefs.sound ? "checked" : ""}> Signalton am Ende der Pause</label><p class="note-line">Der Bildschirm bleibt während des Trainings an, wenn dein Gerät das erlaubt.</p></section>
@@ -1860,18 +1966,29 @@ function gmMsgHTML() {
   if (GM.justOk) return `<p class="gm-msg ok" id="gm-msg" role="status">✓ Verbunden. Die Erholungsampel erscheint im Tab Training.</p>`;
   return "";
 }
+function gmStoreNote() {
+  const g = S.data.gm; if (!g) return "";
+  const nd = Object.keys(g.days || {}).length, na = Object.values(g.acts || {}).filter(a => !a.del).length, nh = S.sessions.filter(s => s.hr).length;
+  if (!nd && !na && !nh) return "";
+  const first = Object.keys(g.days || {}).sort()[0] || (g.cov && g.cov.from);
+  return `<p class="note-line">Gespeichert${hasToken() || linked() ? " in deinem Google Drive" : " auf diesem Gerät"}: ${nd} ${nd === 1 ? "Tag" : "Tage"} Erholungswerte${first ? ` seit ${fmtDate(first)}` : ""}, ${na} ${na === 1 ? "Aktivität" : "Aktivitäten"}, Puls zu ${nh} ${nh === 1 ? "Training" : "Trainings"}.${hasToken() || linked() ? " In der Tabelle „GymBuddy – Trainingslog“ stehen sie in den Blättern Garmin-Tage und Garmin-Aktivitäten." : ""}</p>`;
+}
 function gmStatusText() {
   if (!gmOn()) return "Nicht verbunden. Trage die Adresse deiner Web-App und dein Secret ein.";
   if (GM.status === "error") return "Verbindung fehlgeschlagen. Was zu tun ist, steht unter dem Knopf.";
   if (GM.status === "offline") return "Offline – Garmin-Daten werden später geladen.";
-  const r = gmCache("ready");
+  const r = gmCache("readyAt");
   return r && r.at ? `Verbunden · zuletzt geladen ${new Date(r.at).toLocaleString("de-DE", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}` : "Verbunden.";
 }
+/* Gespeicherte Garmin-Daten (Teil der Drive-Datei GymBuddy.json) */
+function gmStore() { if (!S.data.gm || typeof S.data.gm !== "object") S.data.gm = {}; const g = S.data.gm; g.days = g.days || {}; g.acts = g.acts || {}; g.zones = g.zones || null; g.cov = g.cov || null; return g; }
 async function gmZones() {
-  const c = gmCache("zones");
-  if (c && Date.now() - c.at < 7 * 86400000) return c.z;
-  const j = await gm("zones"); const z = parseZones(j.data);
-  gmCache("zones", { at: Date.now(), z }); return z;
+  const st = gmStore(), c = st.zones;
+  if (c && c.floors && Date.now() - (c.at || 0) < 7 * 86400000) return c;
+  const z = parseZones((await gm("zones")).data);
+  if (z && (!c || stable(c.floors) !== stable(z.floors) || c.max !== z.max)) { st.zones = Object.assign({ at: Date.now() }, z); commit(); }
+  else if (c) c.at = Date.now();
+  return z || c;
 }
 /* Puls je Training nachtragen, sobald Garmin die Daten hat (Ergebnis wird im Training gespeichert und synchronisiert) */
 async function gmFillHr() {
@@ -1895,24 +2012,30 @@ async function gmFillHr() {
 /* Erholung von heute (höchstens einmal pro Stunde laden) */
 async function gmReady(force) {
   if (!gmOn() || GM.busy.ready) return;
-  const today = todayISO(), c = gmCache("ready");
+  const today = todayISO(), c = gmCache("readyAt");
   if (!force && c && c.date === today && Date.now() - c.at < 3600000) return;
   GM.busy.ready = true;
   try {
     const j = await gm("ready", { date: today });
-    gmCache("ready", { date: today, at: Date.now(), o: parseReady(j.data) }); GM.status = "ok";
+    gmCache("readyAt", { date: today, at: Date.now() }); GM.status = "ok";
+    if (gmPutDay(gmStore(), today, parseReady(j.data), Date.now())) commit();
     refresh();
   } catch (e) { gmFail(e); } finally { GM.busy.ready = false; }
 }
 /* Daten für die Analyse: Aktivitäten der Uhr und Erholungstrend */
 async function gmAnalysis(fromIso, toIso) {
   if (!gmOn() || GM.busy.ana) return;
-  const key = fromIso + "|" + toIso, c = gmCache("ana");
-  if (c && c.key === key && Date.now() - c.at < 3600000) return;
+  const key = fromIso + "|" + toIso, c = gmCache("anaAt");
+  if (c && c.key === key && Date.now() - c.at < (c.ok ? 3600000 : 300000)) return; /* höchstens stündlich, nach Fehler alle 5 Min */
+  gmCache("anaAt", { key, at: Date.now(), ok: false });
   GM.busy.ana = true;
   try {
-    const [a, t] = await Promise.all([gm("acts", { start: fromIso, end: toIso, limit: 200 }), gm("trend", { start: fromIso, end: toIso })]);
-    gmCache("ana", { key, at: Date.now(), acts: parseActs(a.data), days: collectByDate(t.data) }); GM.status = "ok";
+    const st = gmStore(), start = gmFetchStart(st.cov, fromIso);
+    const [a, t] = await Promise.all([gm("acts", { start, end: toIso, limit: 200 }), gm("trend", { start, end: toIso })]);
+    const acts = parseActs(a.data), raw = collectByDate(t.data), days = {};
+    for (const d in raw) if (d >= start && d <= toIso) days[d] = gmDayFromRaw(raw[d]);
+    if (gmMergeFetched(st, { acts, days, start, end: toIso, complete: acts.length < 200 }, Date.now())) commit();
+    gmCache("anaAt", { key, at: Date.now(), ok: true }); GM.status = "ok";
     if (S.tab === "ana") refresh();
   } catch (e) { gmFail(e); if (S.tab === "ana") refresh(); } finally { GM.busy.ana = false; }
 }
@@ -1936,13 +2059,26 @@ function zoneBarHTML(z) {
 }
 function hrLineHTML(s) {
   if (!s.hr) return gmOn() && s.startedAt && s.endedAt ? `<p class="note-line">Puls: wird geladen, sobald deine Uhr mit Garmin Connect synchronisiert hat.</p>` : "";
-  return `<div class="hrline"><span class="num">♥ Ø ${s.hr.avg} · max ${s.hr.max} bpm</span>${zoneBarHTML(s.hr.zones)}</div>`;
+  return `<div class="hrline"><span class="num">♥ Ø ${s.hr.avg} · max ${s.hr.max} bpm</span>${hrCurveHTML(s.hr)}${zoneBarHTML(s.hr.zones)}</div>`;
+}
+/* Pulsverlauf im Training (ein Wert pro Messung der Uhr) */
+function hrCurveHTML(hr) {
+  const v = hr.pts; if (!v || v.length < 3) return "";
+  const W = 340, H = 64, L = 26, R = 4, T = 6, B = 14, mn = Math.min(...v) - 5, mx = Math.max(...v) + 5;
+  const xs = i => L + i * (W - L - R) / (v.length - 1), ys = b => T + (mx - b) / (mx - mn) * (H - T - B);
+  const d = v.map((b, i) => `${i ? "L" : "M"}${xs(i).toFixed(1)},${ys(b).toFixed(1)}`).join(" "), mins = Math.round((v.length - 1) * (hr.step || 120) / 60);
+  const hm = ms => new Date(ms).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" });
+  return `<svg class="chart hrcurve" viewBox="0 0 ${W} ${H}" role="img" aria-label="Pulsverlauf im Training, ${Math.min(...v)} bis ${Math.max(...v)} bpm">
+    <line x1="${L}" x2="${W - R}" y1="${ys(hr.avg).toFixed(1)}" y2="${ys(hr.avg).toFixed(1)}" class="grid"/>
+    <text x="${L - 4}" y="${(ys(Math.max(...v)) + 4).toFixed(1)}" class="tick" text-anchor="end">${Math.max(...v)}</text><text x="${L - 4}" y="${(ys(Math.min(...v)) + 4).toFixed(1)}" class="tick" text-anchor="end">${Math.min(...v)}</text>
+    <path d="${d}" class="line"/>
+    ${hr.t0 ? `<text x="${L}" y="${H - 2}" class="tick">${hm(hr.t0)}</text><text x="${W - R}" y="${H - 2}" class="tick" text-anchor="end">${hm(hr.t0 + mins * 60000)}</text>` : ""}</svg>`;
 }
 function readyHTML() {
   if (!gmOn()) return "";
-  const c = gmCache("ready");
-  if (!c || c.date !== todayISO()) return GM.status === "error" ? `<p class="note-line">Garmin: ${esc(GM.msg)}. Mehr im Tab Plan unter Garmin.</p>` : GM.status === "offline" ? "" : `<p class="note-line">Garmin-Erholung wird geladen …</p>`;
-  const r = readiness(c.o || {});
+  const c = gmStore().days[todayISO()];
+  if (!c) return GM.status === "error" ? `<p class="note-line">Garmin: ${esc(GM.msg)}. Mehr im Tab Plan unter Garmin.</p>` : GM.status === "offline" ? "" : `<p class="note-line">Garmin-Erholung wird geladen …</p>`;
+  const r = readiness(c);
   if (!r) return `<p class="note-line">Garmin liefert für heute noch keine Erholungswerte. Synchronisiere deine Uhr.</p>`;
   const lab = { good: "Gut erholt", ok: "Normal erholt", low: "Wenig erholt" }[r.level];
   const icon = { good: "✓", ok: "~", low: "!" }[r.level];
@@ -1999,9 +2135,9 @@ function analysisHTML() {
   const weeks = S.anaWeeks || 4, today = todayISO();
   const fromD = isoToDate(mondayOf(today)); fromD.setDate(fromD.getDate() - (weeks - 1) * 7);
   const from = dateToISO(fromD), ses = S.sessions.filter(s => s.date >= from && s.date <= today);
-  const ana = gmOn() ? gmCache("ana") : null, anaOk = ana && ana.key === from + "|" + today;
-  if (gmOn() && !anaOk) setTimeout(() => gmAnalysis(from, today), 0);
-  const acts = anaOk ? ana.acts : [];
+  const gst = gmStore(), anaOk = !!gst.cov && (gst.cov.from <= from || !GM.busy.ana);
+  if (gmOn()) setTimeout(() => gmAnalysis(from, today), 0);
+  const acts = gmActsList(gst, from, today);
   const rows = weeklyLoad(S.sessions, acts, from, weeks);
   const famsUsed = FAM_ORDER.filter(f => f === "Kraft" || rows.some(r => r.fam[f]));
   const totalSets = ses.reduce((a, s) => a + (s.exercises || []).reduce((b, x) => b + (x.sets || []).length, 0), 0);
@@ -2016,8 +2152,9 @@ function analysisHTML() {
   h += `<section class="card"><h2>Training pro Woche</h2><p class="note-line">Minuten je Woche${gmOn() ? ", Krafttraining aus GymBuddy, andere Sportarten von deiner Uhr" : ""}. Antippen zeigt Details.</p>${weeksChartHTML(rows, famsUsed)}</section>`;
   /* Sätze pro Muskelgruppe */
   const mus = setsByMuscle(S.sessions, from, today), maxSets = Math.max(22, ...MG.map(g => mus[g] / weeks));
-  h += `<section class="card"><h2>Sätze pro Muskelgruppe</h2><p class="note-line">Durchschnitt pro Woche. Für Muskelaufbau gelten etwa 10–20 Sätze pro Woche als guter Bereich (Feld im Hintergrund). Mitarbeitende Muskeln zählen halb.</p>
-    <div class="mbars">${MG.map(g => { const v = Math.round(mus[g] / weeks * 10) / 10; return `<div class="mrow" data-tip="${g}: ${String(v).replace(".", ",")} Sätze pro Woche"><span class="ml">${g}</span><span class="mt"><span class="band" style="left:${10 / maxSets * 100}%;width:${10 / maxSets * 100}%"></span><span class="mb" style="width:${Math.min(100, v / maxSets * 100)}%"></span></span><span class="mv num">${String(v).replace(".", ",")}</span></div>`; }).join("")}</div></section>`;
+  h += `<section class="card"><h2>Sätze pro Muskelgruppe</h2><p class="note-line">Durchschnitt pro Woche. Für Muskelaufbau gelten etwa 10–20 Sätze pro Woche als guter Bereich (grünes Feld). Mitarbeitende Muskeln zählen halb.</p>
+    <div class="mbars"><div class="mrow" aria-hidden="true"><span></span><span class="maxis"><span style="left:0">0</span><span style="left:${10 / maxSets * 100}%">10</span><span style="left:${20 / maxSets * 100}%">20</span></span><span></span></div>${MG.map(g => { const v = Math.round(mus[g] / weeks * 10) / 10; return `<div class="mrow" data-tip="${g}: ${String(v).replace(".", ",")} Sätze pro Woche"><span class="ml">${g}</span><span class="mt"><span class="band" style="left:${10 / maxSets * 100}%;width:${10 / maxSets * 100}%"></span><span class="mb" style="width:${Math.min(100, v / maxSets * 100)}%"></span></span><span class="mv num">${String(v).replace(".", ",")}</span></div>`; }).join("")}</div>
+    <div class="legend"><span><i class="s1"></i>Deine Sätze pro Woche</span><span><i class="bandkey"></i>Zielbereich 10–20</span></div></section>`;
   /* Kraftentwicklung */
   const exs = []; const seen = new Set();
   for (const k of DAY_KEYS) for (const e of planEx(k)) if (!seen.has(e.id)) { seen.add(e.id); exs.push(e); }
@@ -2037,9 +2174,9 @@ function analysisHTML() {
     <div class="hrtable">${withHr.map(s => `<div><span>${fmtDateWd(s.date)} · Tag ${s.day}</span><span class="num">Ø ${s.hr.avg} · max ${s.hr.max}</span>${zoneBarHTML(s.hr.zones)}</div>`).join("")}</div>` : `<p class="note-line">Noch keine Pulsdaten. Sie erscheinen nach dem nächsten Training mit Beginn und Ende, sobald deine Uhr synchronisiert hat.</p>`}</section>`;
   /* Erholungstrend */
   if (anaOk) {
-    const days = ana.days || {}, ds = Object.keys(days).filter(d => d >= from && d <= today).sort();
-    const rhr = ds.map(d => ({ date: d, v: num(days[d].restingHeartRate) })).filter(p => p.v);
-    const hrv = ds.map(d => ({ date: d, v: num(days[d].lastNightAvg) })).filter(p => p.v);
+    const days = gst.days, ds = Object.keys(days).filter(d => d >= from && d <= today).sort();
+    const rhr = ds.map(d => ({ date: d, v: num(days[d].resting) })).filter(p => p.v);
+    const hrv = ds.map(d => ({ date: d, v: num(days[d].hrvLast) })).filter(p => p.v);
     const marks = ses.map(s => s.date);
     h += `<section class="card"><h2>Erholung</h2><p class="note-line">Sinkt der Ruhepuls und steigt die HRV, verkraftest du das Training gut. Striche unten markieren Krafttrainings.</p>
       <h3 class="sub">Ruhepuls (bpm)</h3>${lineChartHTML(rhr, "Ruhepuls", "bpm", from, today, marks)}
@@ -2125,6 +2262,11 @@ window.addEventListener("pointerup", () => { if (DR.li) endDrag(); });
 window.addEventListener("pointercancel", () => { if (DR.li) endDrag(); });
 
 /* ---------- boot ---------- */
+{ const c = LS.get("gmcache") || {}, st = gmStore(); let ch = false; const now = Date.now();
+  if (c.ready && c.ready.date && c.ready.o) { if (gmPutDay(st, c.ready.date, c.ready.o, c.ready.at || now)) ch = true; c.readyAt = { date: c.ready.date, at: c.ready.at }; delete c.ready; }
+  if (c.ana && c.ana.key) { const [f, t] = c.ana.key.split("|"), days = {}; for (const d in c.ana.days || {}) days[d] = gmDayFromRaw(c.ana.days[d]); if (gmMergeFetched(st, { acts: c.ana.acts || [], days, start: f, end: t, complete: false }, c.ana.at || now)) ch = true; delete c.ana; }
+  if (c.zones && c.zones.z && !st.zones) { st.zones = Object.assign({ at: c.zones.at || now }, c.zones.z); ch = true; delete c.zones; }
+  LS.set("gmcache", c); if (!Object.keys(st.days).length && !Object.keys(st.acts).length && !st.zones && !st.cov) S.data.gm = null; if (ch) LS.set("data", S.data); }
 { const g = LS.get("garmin"); if (g && g.url && !(S.data.garmin && S.data.garmin.at)) { S.data.garmin = { url: g.url, secret: g.secret, at: Date.now() }; LS.set("data", S.data); } LS.del("garmin"); }
 { const mp = migratePlan(S.data.plan); if (mp) { S.data.plan = mp; S.data.planAt = Date.now(); LS.set("data", S.data); } }
 derive();
