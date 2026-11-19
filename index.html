@@ -268,6 +268,56 @@ td { padding: 6px 8px 6px 0; border-top: 1px solid var(--line); vertical-align: 
 .xlist input { border: 1px solid var(--line); background: var(--surface); border-radius: 8px; padding: 8px 10px; font-weight: 400; font-size: 14px; width: 100%; }
 .toggle { display: flex; gap: 8px; align-items: center; font-size: 15px; }
 .status { font-size: 14px; }
+
+/* Diagramme: Kategoriefarben (validiert hell/dunkel), Pulszonen als einfarbige Stufen, Statusfarben nur mit Symbol + Text */
+:root { --s1: #2a78d6; --s2: #eb6834; --s3: #1baf7a; --s4: #eda100; --s0: #a6a49c; --z0: #d3d1ca; --z1: #86b6ef; --z2: #5598e7; --z3: #2a78d6; --z4: #1c5cab; --z5: #104281; --st-good: #0ca30c; --st-warn: #fab219; --st-crit: #d03b3b; }
+@media (prefers-color-scheme: dark) { :root { --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500; --s0: #6f6e69; --z0: #4a4945; --z1: #1c5cab; --z2: #2a78d6; --z3: #5598e7; --z4: #86b6ef; --z5: #b7d3f6; } }
+.chart { width: 100%; height: auto; display: block; overflow: visible; }
+.chart .grid { stroke: var(--line); stroke-width: 1; }
+.chart .tick { fill: var(--muted); font-size: 11px; font-family: var(--font-body); }
+.chart .s0 { fill: var(--s0); } .chart .s1 { fill: var(--s1); } .chart .s2 { fill: var(--s2); } .chart .s3 { fill: var(--s3); } .chart .s4 { fill: var(--s4); }
+.chart .line { fill: none; stroke: var(--s1); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.chart .dot { fill: var(--s1); stroke: var(--surface); stroke-width: 2; }
+.chart .mark { fill: var(--muted); opacity: .6; }
+.chart .hit { fill: transparent; }
+.legend { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 12px; color: var(--muted); }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 5px; vertical-align: -1px; background: var(--s0); }
+.legend i.s1, .mb { background: var(--s1); } .legend i.s2 { background: var(--s2); } .legend i.s3 { background: var(--s3); } .legend i.s4 { background: var(--s4); }
+.zbar { display: flex; gap: 2px; height: 10px; border-radius: 4px; overflow: hidden; margin-top: 4px; }
+.zbar i { display: block; min-width: 2px; }
+.z0 { background: var(--z0) !important; } .z1 { background: var(--z1) !important; } .z2 { background: var(--z2) !important; } .z3 { background: var(--z3) !important; } .z4 { background: var(--z4) !important; } .z5 { background: var(--z5) !important; }
+.hrline { display: grid; gap: 4px; font-size: 14px; border-top: 1px solid var(--line); padding-top: 8px; }
+.ready { display: grid; gap: 4px; border-radius: 10px; padding: 8px 10px; background: var(--surface-2); font-size: 13px; }
+.ready-l { font-weight: 600; font-size: 14px; display: flex; align-items: center; gap: 6px; }
+.ready-i { width: 18px; height: 18px; border-radius: 50%; display: inline-grid; place-items: center; font-size: 12px; color: #fff; background: var(--muted); }
+.ready.good .ready-i { background: var(--st-good); } .ready.ok .ready-i { background: var(--st-warn); color: #1a1600; } .ready.low .ready-i { background: var(--st-crit); }
+.ready-v { display: flex; flex-wrap: wrap; gap: 2px 10px; color: var(--muted); }
+.ready-v .t-1 { color: var(--fg); font-weight: 600; }
+.mbars { display: grid; gap: 8px; }
+.mrow { display: grid; grid-template-columns: 84px minmax(0, 1fr) 34px; gap: 8px; align-items: center; font-size: 13px; }
+.mt { position: relative; height: 14px; background: var(--surface-2); border-radius: 4px; overflow: hidden; }
+.band { position: absolute; top: 0; bottom: 0; background: var(--good-soft); }
+.mb { position: absolute; left: 0; top: 4px; height: 6px; border-radius: 0 4px 4px 0; }
+.mv { text-align: right; }
+.trlist { display: grid; }
+.trrow { display: grid; grid-template-columns: minmax(0, 1fr) 72px auto; gap: 2px 10px; align-items: center; padding: 8px 0; border-top: 1px solid var(--line); }
+.trn { grid-column: 1; grid-row: 1; font-weight: 600; font-size: 14px; }
+.trv { grid-column: 1; grid-row: 2; font-size: 13px; color: var(--muted); }
+.trrow svg { grid-column: 2; grid-row: 1 / 3; width: 72px; height: 28px; color: var(--s1); }
+.trrow .pill { grid-column: 3; grid-row: 1 / 3; }
+.pill.warn { background: var(--warn-soft); color: var(--fg); }
+.sporttable { display: grid; font-size: 13px; }
+.sporttable > div { display: grid; grid-template-columns: minmax(0, 1fr) 64px 56px 56px; gap: 6px; padding: 6px 0; border-top: 1px solid var(--line); }
+.sporttable .sh { color: var(--muted); font-size: 12px; border-top: 0; }
+.sporttable span:not(:first-child) { text-align: right; }
+.hrtable { display: grid; gap: 10px; font-size: 13px; }
+.hrtable > div { display: grid; grid-template-columns: 1fr auto; gap: 2px 8px; }
+.hrtable .zbar { grid-column: 1 / -1; }
+.seg2 { grid-template-columns: repeat(2, 1fr); }
+.card h3.sub { font-size: 13px; font-weight: 600; color: var(--muted); margin: 4px 0 -6px; }
+.tip { position: fixed; z-index: 30; background: var(--fg); color: var(--bg); font-size: 13px; padding: 6px 10px; border-radius: 8px; pointer-events: none; max-width: 80vw; box-shadow: var(--shadow); }
+.chipbtn input[type="time"] { border: 0; background: none; padding: 0; font-size: 13px; width: 5.4em; }
+.field.wide input { max-width: none; width: 100%; }
 @media (max-width: 400px) { .pe-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 @media (prefers-reduced-motion: no-preference) {
   .timer-bar i { transition: transform .25s linear; }
@@ -278,6 +328,7 @@ td { padding: 6px 8px 6px 0; border-top: 1px solid var(--line); vertical-align: 
 <body>
 <div id="app"></div>
 <div id="toast" class="toast" role="status" hidden></div>
+<div id="tip" class="tip" role="tooltip" hidden></div>
 <input type="file" id="import-file" accept=".csv,.json,text/csv,application/json" hidden>
 
 <script>
@@ -391,6 +442,7 @@ function usualStart(sessions) {
 }
 /* Maßgeblich ist das Trainingsdatum, nicht der Zeitpunkt des Eintragens */
 function trainingEnd(last, startMin) {
+  if (last.endedAt && !isImported(last)) { const e = new Date(last.endedAt); if (dateToISO(e) === last.date) return e; }
   if (last.createdAt && !isImported(last)) { const c = new Date(last.createdAt); if (dateToISO(c) === last.date) return c; }
   const d = isoToDate(last.date); d.setMinutes(Math.min(23 * 60, startMin + 75)); return d;
 }
@@ -558,6 +610,197 @@ function sessionsFromCSV(rows, findIdByName, nowIso) {
   }
   return [...byKey.values()];
 }
+/* ----- Uhrzeiten ----- */
+const hmToMin = s => { const m = /^(\d{1,2}):(\d{2})/.exec(s || ""); return m ? +m[1] * 60 + +m[2] : null; };
+const minToHm = m => `${pad2(Math.floor(((m % 1440) + 1440) % 1440 / 60))}:${pad2(((m % 60) + 60) % 60)}`;
+function localIso(dateIso, hm) { const d = isoToDate(dateIso); d.setHours(0, hmToMin(hm) || 0, 0, 0); return d.toISOString(); }
+const localHm = iso => { const d = new Date(iso); return `${pad2(d.getHours())}:${pad2(d.getMinutes())}`; };
+/* ----- Garmin: robust auslesen (Antwortformate können sich ändern) ----- */
+const num = v => (typeof v === "number" && isFinite(v)) ? v : (typeof v === "string" && v.trim() !== "" && isFinite(+v)) ? +v : null;
+function findKey(o, key, depth) {
+  depth = depth || 0;
+  if (!o || typeof o !== "object" || depth > 7) return undefined;
+  if (Object.prototype.hasOwnProperty.call(o, key) && o[key] != null) return o[key];
+  for (const k in o) { const v = findKey(o[k], key, depth + 1); if (v !== undefined) return v; }
+  return undefined;
+}
+function collectByDate(o, out, depth) {
+  out = out || {}; depth = depth || 0;
+  if (!o || typeof o !== "object" || depth > 8) return out;
+  if (Array.isArray(o)) { for (const x of o) collectByDate(x, out, depth + 1); return out; }
+  const d = o.calendarDate || o.calendar_date;
+  if (typeof d === "string" && /^\d{4}-\d{2}-\d{2}/.test(d)) {
+    const k = d.slice(0, 10), rec = out[k] || (out[k] = {});
+    for (const f in o) if (o[f] != null && typeof o[f] !== "object") rec[f] = o[f];
+  }
+  for (const f in o) if (o[f] && typeof o[f] === "object") collectByDate(o[f], out, depth + 1);
+  return out;
+}
+function parseHr(json) {
+  const raw = findKey(json, "heartRateValues"), values = [];
+  if (Array.isArray(raw)) for (const v of raw) {
+    if (Array.isArray(v) && v.length >= 2 && num(v[1]) > 0) values.push([num(v[0]), num(v[1])]);
+    else if (v && typeof v === "object") {
+      const t = v.timestamp != null ? v.timestamp : v.startGMT, b = num(v.heartrate != null ? v.heartrate : v.heartRate != null ? v.heartRate : v.value);
+      const ts = typeof t === "number" ? t : Date.parse(t);
+      if (isFinite(ts) && b > 0) values.push([ts, b]);
+    }
+  }
+  values.sort((a, b) => a[0] - b[0]);
+  return { values, resting: num(findKey(json, "restingHeartRate")), resting7: num(findKey(json, "lastSevenDaysAvgRestingHeartRate")) };
+}
+function parseZones(json) {
+  const cands = [];
+  (function walk(o, d) {
+    if (!o || typeof o !== "object" || d > 7) return;
+    if (Array.isArray(o)) { o.forEach(x => walk(x, d + 1)); return; }
+    if (o.zone1Floor != null) cands.push(o);
+    for (const k in o) if (o[k] && typeof o[k] === "object") walk(o[k], d + 1);
+  })(json, 0);
+  const z = cands.find(c => /default/i.test(String(c.sport || ""))) || cands[0];
+  if (!z) return null;
+  const floors = [1, 2, 3, 4, 5].map(i => num(z["zone" + i + "Floor"]));
+  if (floors.some(f => f == null)) return null;
+  return { floors, max: num(z.maxHeartRateUsed) };
+}
+/* Puls eines Trainings aus dem Tagespuls: Durchschnitt, Maximum, Minuten je Zone (Z0 = unter Zone 1) */
+function hrSummary(values, startMs, endMs, zones) {
+  const pts = values.filter(v => v[0] >= startMs - 60000 && v[0] <= endMs + 60000 && v[1] > 0);
+  if (pts.length < 3) return null;
+  const iv = [];
+  for (let i = 1; i < pts.length; i++) iv.push(Math.min(300000, pts[i][0] - pts[i - 1][0]));
+  const med = iv.slice().sort((a, b) => a - b)[Math.floor(iv.length / 2)] || 120000;
+  let sum = 0, mx = 0;
+  const z = [0, 0, 0, 0, 0, 0];
+  pts.forEach((p, i) => {
+    sum += p[1]; mx = Math.max(mx, p[1]);
+    if (zones) { let k = 0; for (let j = 0; j < 5; j++) if (p[1] >= zones.floors[j]) k = j + 1; z[k] += (i < iv.length ? iv[i] : med) / 60000; }
+  });
+  return { avg: Math.round(sum / pts.length), max: mx, n: pts.length, step: Math.round(med / 1000), zones: zones ? z.map(x => Math.round(x)) : null, src: "garmin" };
+}
+function parseReady(r) {
+  const o = {}, ok = x => x && !x._error;
+  if (r && ok(r.hr)) { const h = parseHr(r.hr); o.resting = h.resting; o.resting7 = h.resting7; }
+  if (r && ok(r.hrv)) { const st = findKey(r.hrv, "status"); o.hrvStatus = typeof st === "string" ? st : null; o.hrvLast = num(findKey(r.hrv, "lastNightAvg")); o.hrvWeek = num(findKey(r.hrv, "weeklyAvg")); }
+  if (r && ok(r.sleep)) { o.sleepSec = num(findKey(r.sleep, "sleepTimeSeconds")); const ov = findKey(r.sleep, "overall"); o.sleepScore = ov && typeof ov === "object" ? num(ov.value) : null; }
+  if (r && ok(r.summary)) {
+    o.bbWake = num(findKey(r.summary, "bodyBatteryAtWakeTime")); o.bbHigh = num(findKey(r.summary, "bodyBatteryHighestValue")); o.bb = num(findKey(r.summary, "bodyBatteryMostRecentValue"));
+    if (o.resting == null) o.resting = num(findKey(r.summary, "restingHeartRate"));
+    if (o.resting7 == null) o.resting7 = num(findKey(r.summary, "lastSevenDaysAvgRestingHeartRate"));
+  }
+  return o;
+}
+/* Erholungsampel: jede verfügbare Kennzahl zählt +1 (gut), 0 (neutral) oder −1 (schlecht) */
+function readiness(o) {
+  const items = []; let score = 0, n = 0;
+  const add = (k, v, t) => { score += t; n++; items.push({ k, v, t }); };
+  if (o.hrvStatus) {
+    const s = o.hrvStatus.toUpperCase();
+    const t = s === "BALANCED" ? 1 : s === "UNBALANCED" ? 0 : (s === "LOW" || s === "POOR") ? -1 : null;
+    if (t != null) add("HRV", (t === 1 ? "ausgeglichen" : t === 0 ? "unausgeglichen" : "niedrig") + (o.hrvLast ? ` · ${o.hrvLast} ms` : ""), t);
+  }
+  if (o.sleepScore != null || o.sleepSec != null) {
+    const h = o.sleepSec != null ? o.sleepSec / 3600 : null;
+    const t = o.sleepScore != null ? (o.sleepScore >= 75 ? 1 : o.sleepScore < 60 ? -1 : 0) : (h >= 7 ? 1 : h < 6 ? -1 : 0);
+    const hh = h != null ? `${Math.floor(h)}:${pad2(Math.round((h % 1) * 60) % 60)} h` : "";
+    add("Schlaf", [hh, o.sleepScore != null ? `Score ${o.sleepScore}` : ""].filter(Boolean).join(" · "), t);
+  }
+  const bb = o.bbWake != null ? o.bbWake : o.bbHigh != null ? o.bbHigh : o.bb;
+  if (bb != null) add("Body Battery", String(bb), bb >= 60 ? 1 : bb < 35 ? -1 : 0);
+  if (o.resting != null && o.resting7 != null) { const d = o.resting - o.resting7; add("Ruhepuls", `${o.resting} (Ø ${o.resting7})`, d >= 5 ? -1 : d >= 3 ? 0 : 1); }
+  if (!n) return null;
+  const r = score / n;
+  return { level: r >= 0.5 ? "good" : r > -0.34 ? "ok" : "low", items, score, n };
+}
+/* ----- Analyse ----- */
+const MG = ["Brust", "Rücken", "Schultern", "Bizeps", "Trizeps", "Bauch", "Beine & Po"];
+const MG_BY_ID = { a1: ["Brust", "Trizeps"], a2: ["Rücken", "Bizeps"], a3: ["Brust", "Schultern"], a9: ["Beine & Po"], a4: ["Rücken", "Bizeps"], a5: ["Schultern"], a6: ["Bizeps"], a7: ["Trizeps"], a8: ["Bauch"],
+  b1: ["Rücken", "Bizeps"], b2: ["Schultern", "Trizeps"], b3: ["Rücken", "Bizeps"], b4: ["Brust", "Trizeps"], b5: ["Schultern"], b6: ["Schultern"], b7: ["Bizeps"], b8: ["Trizeps"], b10: ["Beine & Po"], b9: ["Bauch"],
+  c1: ["Brust", "Trizeps"], c2: ["Rücken", "Bizeps"], c9: ["Beine & Po"], c3: ["Brust"], c4: ["Rücken"], c5: ["Schultern"], c6: ["Schultern", "Rücken"], c7a: ["Bizeps"], c7b: ["Trizeps"], c8: ["Bauch"] };
+function muscleOf(id, name) {
+  if (MG_BY_ID[id]) return MG_BY_ID[id];
+  const n = String(name || "").toLowerCase();
+  const rules = [[/trizeps|french|pushdown|skull|kickback/, "Trizeps"], [/curl|bizeps/, "Bizeps"], [/seitheben|schulter|face ?pull|frontheben|military|arnold|reverse/, "Schultern"],
+    [/crunch|bauch|sit-?up|plank|beinheben|ab-?wheel|rollout/, "Bauch"], [/kniebeuge|squat|beinpresse|ausfall|lunge|kreuzheben|deadlift|hip ?thrust|wade|beinstreck|beinbeuger|hyperext|glute|\bpo\b/, "Beine & Po"],
+    [/rudern|row|latzug|klimmzug|pull|überzug|ueberzug/, "Rücken"], [/bank|brust|butterfly|fly|crossover|dips|liegestütz|push/, "Brust"]];
+  for (const [re, g] of rules) if (re.test(n)) return [g];
+  return [];
+}
+/* Sätze je Muskelgruppe: Hauptmuskel zählt voll, mitarbeitender Muskel halb */
+function setsByMuscle(sessions, fromIso, toIso) {
+  const out = {}; MG.forEach(g => { out[g] = 0; });
+  for (const s of sessions) {
+    if (s.date < fromIso || s.date > toIso) continue;
+    for (const x of s.exercises || []) {
+      const n = (x.sets || []).filter(z => (z.reps || 0) > 0).length, gs = muscleOf(x.id, x.name);
+      gs.forEach((g, i) => { if (out[g] != null) out[g] += n * (i === 0 ? 1 : 0.5); });
+    }
+  }
+  return out;
+}
+const SPORT_FAMILY = { basketball: "Basketball", mountain_biking: "Rad & MTB", e_bike_mountain: "Rad & MTB", cycling: "Rad & MTB", road_biking: "Rad & MTB", gravel_cycling: "Rad & MTB", indoor_cycling: "Rad & MTB", e_bike_fitness: "Rad & MTB",
+  running: "Laufen", trail_running: "Laufen", treadmill_running: "Laufen", track_running: "Laufen" };
+const SPORT_DE = { basketball: "Basketball", mountain_biking: "MTB", e_bike_mountain: "E-MTB", cycling: "Rad", road_biking: "Rennrad", gravel_cycling: "Gravel", indoor_cycling: "Indoor-Rad", running: "Laufen", trail_running: "Traillauf",
+  treadmill_running: "Laufband", walking: "Gehen", hiking: "Wandern", lap_swimming: "Schwimmen", open_water_swimming: "Freiwasser", strength_training: "Krafttraining (Uhr)", indoor_cardio: "Cardio", hiit: "HIIT", yoga: "Yoga",
+  tennis: "Tennis", padel: "Padel", soccer: "Fußball", resort_skiing: "Ski", resort_skiing_snowboarding_ws: "Ski", backcountry_skiing: "Skitour", stand_up_paddleboarding: "SUP", rowing: "Rudern", climbing: "Klettern", bouldering: "Bouldern" };
+const sportLabel = k => SPORT_DE[k] || String(k || "Aktivität").replace(/_/g, " ").replace(/^\w/, c => c.toUpperCase());
+const sportFamily = k => SPORT_FAMILY[k] || "Andere";
+function parseActs(json) {
+  const list = [];
+  (function walk(o, d) {
+    if (!o || typeof o !== "object" || d > 6) return;
+    if (Array.isArray(o)) { o.forEach(x => walk(x, d + 1)); return; }
+    if (o.activityId != null && (o.startTimeLocal || o.startTimeGMT)) {
+      const type = (o.activityType && (o.activityType.typeKey || o.activityType.type)) || o.activityTypeKey || "other";
+      const st = String(o.startTimeLocal || o.startTimeGMT);
+      list.push({ id: String(o.activityId), name: o.activityName || "", type, date: st.slice(0, 10), start: st, dur: num(o.duration) || num(o.movingDuration) || 0,
+        avgHR: num(o.averageHR), maxHR: num(o.maxHR), kcal: num(o.calories), te: num(o.aerobicTrainingEffect), load: num(o.activityTrainingLoad), dist: num(o.distance) });
+      return;
+    }
+    for (const k in o) if (o[k] && typeof o[k] === "object") walk(o[k], d + 1);
+  })(json, 0);
+  const seen = new Set();
+  return list.filter(a => !seen.has(a.id) && seen.add(a.id)).sort((a, b) => b.start.localeCompare(a.start));
+}
+/* Minuten eines Krafttrainings: aus Beginn/Ende, sonst geschätzt (2,5 Min je Satz) */
+function sessionMinutes(s) {
+  if (s.startedAt && s.endedAt) { const m = (Date.parse(s.endedAt) - Date.parse(s.startedAt)) / 60000; if (m >= 10 && m <= 240) return Math.round(m); }
+  return Math.round((s.exercises || []).reduce((a, x) => a + (x.sets || []).length, 0) * 2.5);
+}
+function weeklyLoad(sessions, acts, fromMonday, weeks) {
+  const out = [];
+  for (let i = 0; i < weeks; i++) { const d = isoToDate(fromMonday); d.setDate(d.getDate() + i * 7); out.push({ wk: dateToISO(d), Kraft: 0, n: 0, fam: {} }); }
+  const idx = iso => { const i = Math.round((isoToDate(mondayOf(iso)) - isoToDate(fromMonday)) / 604800000); return i >= 0 && i < weeks ? i : -1; };
+  const gymDays = new Set(sessions.map(s => s.date));
+  for (const s of sessions) { const i = idx(s.date); if (i >= 0) { out[i].Kraft += sessionMinutes(s); out[i].n++; } }
+  for (const a of acts || []) {
+    if (a.type === "strength_training" && gymDays.has(a.date)) continue; /* schon als Krafttraining gezählt */
+    const i = idx(a.date); if (i < 0) continue;
+    const f = a.type === "strength_training" ? "Andere" : sportFamily(a.type);
+    out[i].fam[f] = (out[i].fam[f] || 0) + Math.round((a.dur || 0) / 60);
+  }
+  return out;
+}
+/* Kraftentwicklung je Übung: bestes e1RM pro Training (bei Körpergewicht: Summe der Wiederholungen) */
+function strengthSeries(sessions, exId, fromIso, toIso) {
+  const pts = [];
+  for (const s of sessions.slice().reverse()) {
+    if (s.date < fromIso || s.date > toIso) continue;
+    const x = (s.exercises || []).find(y => y.id === exId); if (!x || !x.sets || !x.sets.length) continue;
+    const best = Math.max(...x.sets.map(z => e1rm(z.kg || 0, z.reps || 0)));
+    pts.push({ date: s.date, v: best > 0 ? Math.round(best * 10) / 10 : x.sets.reduce((a, z) => a + (z.reps || 0), 0), bw: !(best > 0) });
+  }
+  return pts;
+}
+function trendInfo(pts) {
+  if (pts.length < 2) return null;
+  const first = pts[0].v, last = pts[pts.length - 1].v;
+  const pct = first > 0 ? Math.round((last - first) / first * 100) : 0;
+  let stall = false;
+  if (pts.length >= 4) { const before = Math.max(...pts.slice(0, -3).map(p => p.v)), recent = Math.max(...pts.slice(-3).map(p => p.v)); stall = recent <= before; }
+  return { first, last, pct, stall };
+}
+
 /*PURE-END*/
 
 /* ---------- state ---------- */
@@ -698,11 +941,12 @@ async function upload(id, content) {
 const SHEETS = "https://sheets.googleapis.com/v4/spreadsheets";
 const cellText = s => { s = String(s == null ? "" : s); return /^[=+\-@]/.test(s) ? "'" + s : s; };
 function sheetRows() {
-  const rows = [["Datum", "Wochentag", "Tag", "Runde", "Übung", "Spontan", "Satz", "Gewicht (kg)", "Wdh.", "Volumen (kg)", "e1RM (kg)", "RIR", "Notiz"]];
-  for (const s of S.sessions.slice().reverse()) for (const x of s.exercises || []) x.sets.forEach((z, i) => {
-    const b = e1rm(z.kg || 0, z.reps || 0);
-    rows.push([s.date, WD[isoToDate(s.date).getDay()], s.day, s.week || "", cellText(x.name), x.extra ? "ja" : "", i + 1, z.kg || 0, z.reps || 0, round2((z.kg || 0) * (z.reps || 0)), b ? Math.round(b * 10) / 10 : "", i === x.sets.length - 1 && x.rir != null ? x.rir : "", i === 0 ? cellText(x.note || "") : ""]);
-  });
+  const rows = [["Datum", "Wochentag", "Tag", "Runde", "Übung", "Spontan", "Satz", "Gewicht (kg)", "Wdh.", "Volumen (kg)", "e1RM (kg)", "RIR", "Notiz", "Dauer (Min)", "Ø Puls", "Max Puls"]];
+  for (const s of S.sessions.slice().reverse()) (s.exercises || []).forEach((x, xi) => x.sets.forEach((z, i) => {
+    const b = e1rm(z.kg || 0, z.reps || 0), first = xi === 0 && i === 0;
+    rows.push([s.date, WD[isoToDate(s.date).getDay()], s.day, s.week || "", cellText(x.name), x.extra ? "ja" : "", i + 1, z.kg || 0, z.reps || 0, round2((z.kg || 0) * (z.reps || 0)), b ? Math.round(b * 10) / 10 : "", i === x.sets.length - 1 && x.rir != null ? x.rir : "", i === 0 ? cellText(x.note || "") : "",
+      first ? sessionMinutes(s) : "", first && s.hr ? s.hr.avg : "", first && s.hr ? s.hr.max : ""]);
+  }));
   return rows;
 }
 function hashStr(s) { let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return (h >>> 0).toString(36); }
@@ -793,7 +1037,8 @@ function freshExState(e, week, n) {
 }
 function newDraft(day) {
   const date = todayISO(), week = currentRound().round;
-  S.draft = { day, date, week, autoRound: week, ex: {}, order: planEx(day).map(e => e.id), editingId: null, startedAt: new Date().toISOString(), updatedAt: Date.now() };
+  const nowD = new Date();
+  S.draft = { day, date, week, autoRound: week, startTime: `${pad2(nowD.getHours())}:${pad2(nowD.getMinutes())}`, endTime: "", ex: {}, order: planEx(day).map(e => e.id), editingId: null, startedAt: new Date().toISOString(), updatedAt: Date.now() };
   for (const e of planEx(day)) S.draft.ex[e.id] = freshExState(e, week);
   touch();
 }
@@ -804,7 +1049,8 @@ function metaForSessionEx(se) {
   return { id: se.id, name: se.name, sets: se.sets.length, min: null, max: null, rest: 60, restMax: 90, step: 2.5, extra: true, link: info.link || "" };
 }
 function draftFromSession(s) {
-  S.draft = { day: s.day, date: s.date, week: s.week || 1, ex: {}, order: [], editingId: s.id, startedAt: s.startedAt || s.createdAt || new Date().toISOString(), createdAt: s.createdAt || null, updatedAt: Date.now() };
+  const sameDay = iso => iso && dateToISO(new Date(iso)) === s.date;
+  S.draft = { day: s.day, date: s.date, week: s.week || 1, startTime: sameDay(s.startedAt) && !isImported(s) ? localHm(s.startedAt) : "", endTime: sameDay(s.endedAt) ? localHm(s.endedAt) : "", ex: {}, order: [], editingId: s.id, startedAt: s.startedAt || s.createdAt || new Date().toISOString(), createdAt: s.createdAt || null, updatedAt: Date.now() };
   const toState = (meta, se) => ({ meta, sets: se.sets.map(x => ({ kg: x.kg, reps: x.reps, done: true, kgSet: true })), rir: se.rir == null ? null : se.rir, note: se.note || "" });
   for (const e of planEx(s.day)) {
     const se = (s.exercises || []).find(x => x.id === e.id);
@@ -850,13 +1096,14 @@ function render() {
   app.innerHTML = headerHTML() + `<main><div class="wrap">${tabHTML()}</div></main>`;
 }
 function headerHTML() {
-  const tabs = [["home", "Training"], ["prog", "Fortschritt"], ["hist", "Verlauf"], ["plan", "Plan"]], v = syncView();
+  const tabs = [["home", "Training"], ["ana", "Analyse"], ["prog", "Fortschritt"], ["hist", "Verlauf"], ["plan", "Plan"]], v = syncView();
   return `<header class="top"><div class="wrap">
     <div class="brand"><h1>GymBuddy</h1><button class="sync ${v.cls}" id="sync-pill" data-act="sync-pill">${esc(v.text)}</button></div>
     <nav class="tabs" aria-label="Bereiche">${tabs.map(([k, l]) => `<button id="tab-${k}" data-act="tab" data-v="${k}" ${S.tab === k ? 'aria-current="page"' : ""}>${l}</button>`).join("")}</nav>
   </div></header>`;
 }
 function tabHTML() {
+  if (S.tab === "ana") return analysisHTML();
   if (S.tab === "prog") return progressHTML();
   if (S.tab === "hist") return historyHTML();
   if (S.tab === "plan") return planHTML();
@@ -908,7 +1155,7 @@ function reminderHTML() {
   const nd = nextDay(), d = S.plan[nd], startMin = usualStart(S.sessions), now = Date.now();
   const slot = nextSlot(S.sessions[0], startMin, now);
   const title = `Tag ${nd} · ${esc(d.title)}`;
-  if (!slot) return `<section class="nextcard ready" aria-label="Nächstes Training"><span class="next-k">Nächstes Training</span><span class="next-h">${title}</span><p>Starte, wann es dir passt. Danach zeigt dir GymBuddy, wann der nächste Tag am besten passt.</p></section>`;
+  if (!slot) return `<section class="nextcard ready" aria-label="Nächstes Training"><span class="next-k">Nächstes Training</span><span class="next-h">${title}</span><p>Starte, wann es dir passt. Danach zeigt dir GymBuddy, wann der nächste Tag am besten passt.</p>${readyHTML()}</section>`;
   const day = x => `${WD[x.getDay()]} ${pad2(x.getDate())}.${pad2(x.getMonth() + 1)}.`;
   const hm = x => `${pad2(x.getHours())}:${pad2(x.getMinutes())}`;
   let when = slot.ideal;
@@ -930,7 +1177,7 @@ function reminderHTML() {
     text = `Seit ${Math.floor(slot.daysSince)} Tagen kein Training. Starte am besten einen neuen Block mit einer Einstiegsrunde: Technik sauber, RIR 3.`;
     extra = ri0() === 1 ? cal : `<button class="btn primary" id="pause-newblock" data-act="newblock-yes">Neuen Block starten</button>`;
   }
-  return `<section class="nextcard ${slot.state}" aria-label="Nächstes Training"><span class="next-k">Nächstes Training · Pause 48–72 Std.</span><span class="next-h">${head}</span><p>${text}</p>${slot.state === "pause" ? "" : windowHTML(slot)}<p class="note-line">48–72 Stunden Pause geben dem Oberkörper genug Erholung, ohne dass der Trainingsreiz verpufft.</p><div class="row">${extra}</div></section>`;
+  return `<section class="nextcard ${slot.state}" aria-label="Nächstes Training"><span class="next-k">Nächstes Training · Pause 48–72 Std.</span><span class="next-h">${head}</span><p>${text}</p>${readyHTML()}${slot.state === "pause" ? "" : windowHTML(slot)}<p class="note-line">48–72 Stunden Pause geben dem Oberkörper genug Erholung, ohne dass der Trainingsreiz verpufft.</p><div class="row">${extra}</div></section>`;
 }
 /* Pausenfenster zwischen zwei Trainingstagen: Training · Erholung · Ideal · Noch gut · Spät */
 function windowHTML(slot) {
@@ -955,6 +1202,8 @@ function workoutHTML() {
     <div class="wtitle"><h1>Tag ${D.day} · ${esc(d ? d.title : "")}</h1>
       <div class="wmeta">
         <label class="chipbtn"><input type="date" id="w-date" data-f="date" value="${D.date}" aria-label="Datum"></label>
+        <label class="chipbtn">von <input type="time" id="w-start" data-f="tstart" value="${D.startTime || ""}" aria-label="Beginn"></label>
+        <label class="chipbtn">bis <input type="time" id="w-end" data-f="tend" value="${D.endTime || ""}" aria-label="Ende, leer = beim Speichern"></label>
         <button class="chipbtn" id="w-week" data-act="week" title="Runde ändern">Runde ${D.week} · ${ph.name}</button>
       </div></div>
     <span class="badge" data-day="${D.day}" aria-hidden="true">${D.day}</span>
@@ -1124,7 +1373,7 @@ function historyHTML() {
     const vol = (s.exercises || []).reduce((a, x) => a + x.sets.reduce((b, z) => b + (z.kg || 0) * (z.reps || 0), 0), 0);
     const open = S.openHist === s.id;
     h += `<button class="hrow" id="h-${esc(s.id)}" data-act="hist" data-v="${esc(s.id)}" aria-expanded="${open}"><span class="badge" data-day="${s.day}">${s.day}</span><span class="hd">${fmtDateWd(s.date)} · ${esc(S.plan[s.day] ? S.plan[s.day].title : "Tag " + s.day)}</span><span class="hs">Runde ${s.week || "–"} · ${(s.exercises || []).length} Übungen · ${sets} Sätze · ${Math.round(vol).toLocaleString("de-DE")} kg</span></button>`;
-    if (open) h += `<div class="hdetail"><div class="hlist">${(s.exercises || []).map(x => `<div><span>${x.extra ? "+ " : ""}${esc(x.name)}${x.note ? `<br><small>${esc(x.note)}</small>` : ""}</span><span>${esc(setsStr(x.sets, findPlanEx(x.id)))}${x.rir != null ? ` · RIR ${x.rir}` : ""}</span></div>`).join("")}</div>
+    if (open) h += `<div class="hdetail">${s.startedAt && s.endedAt && !isImported(s) ? `<p class="note-line">${localHm(s.startedAt)}–${localHm(s.endedAt)} Uhr · ${sessionMinutes(s)} Min</p>` : ""}${hrLineHTML(s)}<div class="hlist">${(s.exercises || []).map(x => `<div><span>${x.extra ? "+ " : ""}${esc(x.name)}${x.note ? `<br><small>${esc(x.note)}</small>` : ""}</span><span>${esc(setsStr(x.sets, findPlanEx(x.id)))}${x.rir != null ? ` · RIR ${x.rir}` : ""}</span></div>`).join("")}</div>
       ${S.confirm === "del-" + s.id ? confirmHTML("Diese Einheit endgültig löschen?", "del-yes", "Löschen", s.id) :
         `<div class="row"><button class="btn ghost" id="h-edit" data-act="edit" data-v="${esc(s.id)}">Bearbeiten</button><button class="btn ghost" id="h-del" data-act="confirm" data-v="del-${esc(s.id)}">Löschen</button></div>`}</div>`;
   }
@@ -1171,6 +1420,14 @@ function planHTML() {
   <div class="row"><button class="btn primary" id="pe-save" data-act="pe-save" ${P.dirty ? "" : "disabled"}>Plan speichern</button>${P.dirty ? `<button class="btn ghost" id="pe-revert" data-act="pe-revert">Änderungen verwerfen</button>` : ""}</div>
   ${S.confirm === "pe-reset" ? confirmHTML("Alle drei Tage auf den ursprünglichen Plan zurücksetzen?", "pe-reset", "Zurücksetzen") : `<div class="row"><button class="link" id="pe-reset" data-act="confirm" data-v="pe-reset">Ursprünglichen Plan wiederherstellen</button></div>`}
   <section class="card"><h2>Spontane Übungen</h2>${xs.length ? `<div class="xlist">${xs.map(x => `<label for="xl-${x.id}">${esc(x.name)}<input id="xl-${x.id}" data-xl="${x.id}" inputmode="url" value="${esc(x.link || "")}" placeholder="Link zur Anleitung (optional)"></label>`).join("")}</div>` : `<p class="note-line">Noch keine. Im Training kannst du unten „+ Übung hinzufügen“ antippen.</p>`}</section>
+  <section class="card"><h2>Garmin</h2>
+    <p class="status" id="garmin-status">${esc(gmStatusText())}</p>
+    <label class="field wide" for="gm-url">Adresse der Web-App (Apps Script)<input id="gm-url" inputmode="url" autocomplete="off" placeholder="https://script.google.com/macros/s/…/exec" value="${esc(gmCfg().url || "")}"></label>
+    <label class="field wide" for="gm-secret">Secret (APP_SECRET aus dem Script)<input id="gm-secret" type="password" autocomplete="off" value="${esc(gmCfg().secret || "")}"></label>
+    <div class="row"><button class="btn primary" id="gm-save" data-act="gm-save">Speichern & testen</button>${gmOn() ? `<button class="btn ghost" id="gm-diag" data-act="gm-diag">Diagnose</button>` : ""}</div>
+    <p class="note-line">GymBuddy holt über dein Apps-Script den Tagespuls, Schlaf, HRV, Body Battery und die Aktivitäten deiner Uhr. Ein Training auf der Uhr musst du dafür nicht starten. Die Daten erscheinen, sobald die Uhr mit Garmin Connect synchronisiert hat.</p>
+    ${gmOn() ? (S.confirm === "gm-remove" ? confirmHTML("Garmin-Verbindung auf diesem Gerät entfernen?", "gm-remove-yes", "Entfernen") : `<div class="row"><button class="link" id="gm-remove" data-act="confirm" data-v="gm-remove">Verbindung entfernen</button></div>`) : ""}
+  </section>
   <section class="card"><h2>Pausentimer</h2><label class="toggle" for="pref-sound"><input type="checkbox" id="pref-sound" data-pf="sound" ${prefs.sound ? "checked" : ""}> Signalton am Ende der Pause</label><p class="note-line">Der Bildschirm bleibt während des Trainings an, wenn dein Gerät das erlaubt.</p></section>
   <section class="card"><h2>Import & Export</h2>
     <p class="note-line">Import: CSV aus der bisherigen Claude-Version (Plan → CSV herunterladen) oder eine Sicherung dieser App. Doppelt importieren schadet nicht.</p>
@@ -1236,6 +1493,7 @@ document.addEventListener("visibilitychange", () => {
   if (document.visibilityState !== "visible") return;
   if (S.view === "workout") { keepAwake(true); tickTimer(); }
   if (hasToken()) sync();
+  gmRefreshAll();
 });
 window.addEventListener("online", () => { if (hasToken()) sync(); });
 
@@ -1299,10 +1557,18 @@ function finishWorkout() {
   if (!set.blockStart) { set.blockStart = D.date; setChanged = true; }
   if (!D.editingId && D.autoRound && D.week !== D.autoRound) { set.shift = (set.shift || 0) + (D.week - D.autoRound) * 3; setChanged = true; }
   if (setChanged) { S.data.settings = set; S.data.settingsAt = Date.now(); }
-  saveSession(id, { date: D.date, day: D.day, week: D.week, exercises, startedAt: D.startedAt, createdAt: D.editingId ? (D.createdAt || D.startedAt) : now, updatedAt: now });
+  /* Beginn und Ende des Trainings (für Puls aus Garmin und die Erinnerung) */
+  const startedAt = localIso(D.date, D.startTime || minToHm(usualStart(S.sessions)));
+  let endedAt = D.endTime ? localIso(D.date, D.endTime) : (D.date === todayISO() && !D.editingId ? now : new Date(Date.parse(startedAt) + 80 * 60000).toISOString());
+  if (Date.parse(endedAt) <= Date.parse(startedAt)) endedAt = new Date(Date.parse(startedAt) + 80 * 60000).toISOString();
+  const old = D.editingId && S.data.sessions[D.editingId];
+  const doc = { date: D.date, day: D.day, week: D.week, exercises, startedAt, endedAt, createdAt: D.editingId ? (D.createdAt || D.startedAt) : now, updatedAt: now };
+  if (old && old.hr && old.startedAt === startedAt && old.endedAt === endedAt) doc.hr = old.hr;
+  saveSession(id, doc);
   const n = exercises.reduce((a, x) => a + x.sets.length, 0), wasEdit = !!D.editingId;
   const added = autoAddToPlan(D.day, exercises);
   discardDraft(); stopTimer(); goHome();
+  if (gmOn()) setTimeout(gmFillHr, 600); /* nachträglich eingetragenes Training: Puls gleich holen */
   const msg = wasEdit ? "Änderungen gespeichert" : `Training gespeichert · ${n} ${n === 1 ? "Satz" : "Sätze"}`;
   toast(added.length ? `${msg}. ${added.join(", ")} ${added.length === 1 ? "ist" : "sind"} jetzt fest in Tag ${D.day}.` : msg, added.length ? 6000 : 3400);
 }
@@ -1423,6 +1689,17 @@ document.addEventListener("click", ev => {
     case "addex-open": S.addOpen = true; $("#addex-wrap").outerHTML = addExHTML(); setTimeout(() => { const i = $("#addex-name"); if (i) i.focus(); }, 0); return;
     case "addex-cancel": S.addOpen = false; $("#addex-wrap").outerHTML = addExHTML(); return;
     case "addex-ok": addExtra(); return;
+    case "ana-weeks": S.anaWeeks = Number(v) || 4; render(); return;
+    case "gm-save": {
+      const url = ($("#gm-url").value || "").trim(), secret = ($("#gm-secret").value || "").trim();
+      if (!/^https:\/\/script\.google(usercontent)?\.com\//.test(url)) { toast("Bitte die Web-App-Adresse von script.google.com einfügen."); return; }
+      if (secret.length < 8) { toast("Das Secret ist zu kurz."); return; }
+      LS.set("garmin", { url, secret }); LS.del("gmcache"); LS.del("gmTried"); GM.status = ""; b.disabled = true; b.textContent = "Teste …";
+      gm("ping").then(() => { GM.status = "ok"; toast("Garmin verbunden"); gmReady(true); gmFillHr(); }).catch(e => { gmFail(e); toast("Verbindung fehlgeschlagen"); }).finally(() => { render(); });
+      return;
+    }
+    case "gm-diag": gmDiagnose(); return;
+    case "gm-remove-yes": LS.del("garmin"); LS.del("gmcache"); LS.del("gmTried"); GM.status = ""; S.confirm = null; render(); toast("Garmin-Verbindung entfernt"); return;
     case "reo-start": S.reorder = true; render(); window.scrollTo(0, 0); return;
     case "reo-done": S.reorder = false; render(); window.scrollTo(0, 0); return;
     case "reo-reset": { const D = S.draft, planIds = planEx(D.day).map(e => e.id); D.order = planIds.concat(D.order.filter(id => !planIds.includes(id))); touch(); render(); return; }
@@ -1476,7 +1753,15 @@ document.addEventListener("input", ev => {
   const t = ev.target;
   if (t.id === "addex-name") { const sg = $("#addex-sugg"); if (sg) sg.innerHTML = suggHTML(t.value); return; }
   if (t.dataset.f && S.view === "workout" && S.draft) {
-    if (t.dataset.f === "date") { if (t.value) { S.draft.date = t.value; touch(); } return; }
+    if (t.dataset.f === "date") {
+      if (t.value) {
+        S.draft.date = t.value;
+        if (!S.draft.timeTouched && t.value !== todayISO()) { const m = usualStart(S.sessions); S.draft.startTime = minToHm(m); S.draft.endTime = minToHm(m + 80); const a = $("#w-start"), z = $("#w-end"); if (a) a.value = S.draft.startTime; if (z) z.value = S.draft.endTime; }
+        touch();
+      }
+      return;
+    }
+    if (t.dataset.f === "tstart" || t.dataset.f === "tend") { S.draft[t.dataset.f === "tstart" ? "startTime" : "endTime"] = t.value || ""; S.draft.timeTouched = true; touch(); return; }
     const c = setCtx(t); if (!c) return;
     if (t.dataset.f === "note") { c.st.note = t.value.slice(0, 300); touch(); return; }
     if (t.dataset.f === "kg") {
@@ -1514,6 +1799,231 @@ document.addEventListener("change", ev => {
   }
 });
 document.addEventListener("keydown", ev => { if (ev.key === "Enter" && ev.target.id === "addex-name") { ev.preventDefault(); ev.target.blur(); } });
+
+/* ---------- Garmin (über deinen Apps-Script-Zwischendienst) ---------- */
+const GM = { busy: {}, status: "", msg: "" };
+const gmCfg = () => LS.get("garmin") || {};
+const gmOn = () => { const c = gmCfg(); return !!(c.url && c.secret); };
+const gmCache = (k, v) => { const all = LS.get("gmcache") || {}; if (v === undefined) return all[k]; all[k] = v; LS.set("gmcache", all); };
+async function gm(op, params) {
+  const c = gmCfg(); if (!c.url || !c.secret) throw { cfg: true };
+  let u; try { u = new URL(c.url); } catch (e) { throw { msg: "Die Adresse der Web-App ist ungültig." }; }
+  u.searchParams.set("op", op); u.searchParams.set("s", c.secret);
+  for (const k in params || {}) u.searchParams.set(k, params[k]);
+  let r; try { r = await fetch(u.toString()); } catch (e) { throw { msg: navigator.onLine ? "Keine Antwort vom Zwischendienst. Ist die Web-App für „Jeder“ freigegeben?" : "Keine Internetverbindung.", offline: !navigator.onLine }; }
+  let j; try { j = await r.json(); } catch (e) { throw { msg: "Unerwartete Antwort. Stimmt die Adresse der Web-App?" }; }
+  if (j.error) throw { msg: j.message || j.error, code: j.error };
+  return j;
+}
+function gmFail(e) { if (e && e.cfg) return; GM.status = e && e.offline ? "offline" : "error"; GM.msg = (e && e.msg) || String(e); const st = $("#garmin-status"); if (st) st.textContent = gmStatusText(); }
+function gmStatusText() {
+  if (!gmOn()) return "Nicht verbunden. Trage die Adresse deiner Web-App und dein Secret ein.";
+  if (GM.status === "error") return "Fehler: " + GM.msg;
+  if (GM.status === "offline") return "Offline – Garmin-Daten werden später geladen.";
+  const r = gmCache("ready");
+  return r && r.at ? `Verbunden · zuletzt geladen ${new Date(r.at).toLocaleString("de-DE", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}` : "Verbunden.";
+}
+async function gmZones() {
+  const c = gmCache("zones");
+  if (c && Date.now() - c.at < 7 * 86400000) return c.z;
+  const j = await gm("zones"); const z = parseZones(j.data);
+  gmCache("zones", { at: Date.now(), z }); return z;
+}
+/* Puls je Training nachtragen, sobald Garmin die Daten hat (Ergebnis wird im Training gespeichert und synchronisiert) */
+async function gmFillHr() {
+  if (!gmOn() || GM.busy.hr) return; GM.busy.hr = true;
+  try {
+    const now = Date.now(), tried = LS.get("gmTried") || {};
+    const todo = S.sessions.filter(s => !s.hr && s.startedAt && s.endedAt && Date.parse(s.endedAt) < now - 15 * 60000 && now - Date.parse(s.endedAt) < 30 * 86400000 && !(tried[s.id] > now - 3600000)).slice(0, 4);
+    if (!todo.length) return;
+    let zones = null; try { zones = await gmZones(); } catch (e) {}
+    const days = {}; let changed = false;
+    for (const s of todo) {
+      tried[s.id] = now;
+      if (!days[s.date]) days[s.date] = parseHr((await gm("hr", { date: s.date })).data);
+      const sum = hrSummary(days[s.date].values, Date.parse(s.startedAt), Date.parse(s.endedAt), zones);
+      if (sum && S.data.sessions[s.id]) { S.data.sessions[s.id] = Object.assign({}, S.data.sessions[s.id], { hr: sum, updatedAt: new Date().toISOString() }); changed = true; }
+    }
+    LS.set("gmTried", tried); GM.status = "ok";
+    if (changed) { commit(); refresh(); }
+  } catch (e) { gmFail(e); } finally { GM.busy.hr = false; }
+}
+/* Erholung von heute (höchstens einmal pro Stunde laden) */
+async function gmReady(force) {
+  if (!gmOn() || GM.busy.ready) return;
+  const today = todayISO(), c = gmCache("ready");
+  if (!force && c && c.date === today && Date.now() - c.at < 3600000) return;
+  GM.busy.ready = true;
+  try {
+    const j = await gm("ready", { date: today });
+    gmCache("ready", { date: today, at: Date.now(), o: parseReady(j.data) }); GM.status = "ok";
+    refresh();
+  } catch (e) { gmFail(e); } finally { GM.busy.ready = false; }
+}
+/* Daten für die Analyse: Aktivitäten der Uhr und Erholungstrend */
+async function gmAnalysis(fromIso, toIso) {
+  if (!gmOn() || GM.busy.ana) return;
+  const key = fromIso + "|" + toIso, c = gmCache("ana");
+  if (c && c.key === key && Date.now() - c.at < 3600000) return;
+  GM.busy.ana = true;
+  try {
+    const [a, t] = await Promise.all([gm("acts", { start: fromIso, end: toIso, limit: 200 }), gm("trend", { start: fromIso, end: toIso })]);
+    gmCache("ana", { key, at: Date.now(), acts: parseActs(a.data), days: collectByDate(t.data) }); GM.status = "ok";
+    if (S.tab === "ana") refresh();
+  } catch (e) { gmFail(e); if (S.tab === "ana") refresh(); } finally { GM.busy.ana = false; }
+}
+function gmRefreshAll() { if (!gmOn()) return; gmReady(); gmFillHr(); }
+async function gmDiagnose() {
+  const today = todayISO(), out = { at: new Date().toISOString() };
+  for (const [op, p] of [["ready", { date: today }], ["zones", {}], ["acts", { start: dateToISO(new Date(Date.now() - 14 * 86400000)), end: today, limit: 5 }]]) {
+    try { out[op] = (await gm(op, p)).data; } catch (e) { out[op] = { error: e.msg || String(e) }; }
+  }
+  const txt = JSON.stringify(out, null, 1);
+  downloadFile(`garmin-diagnose-${today}.json`, txt.length > 400000 ? txt.slice(0, 400000) : txt, "application/json");
+  toast("Diagnose gespeichert. Schick die Datei bei Bedarf an Claude.");
+}
+
+/* ---------- Anzeige: Puls, Zonen, Ampel ---------- */
+function zoneBarHTML(z) {
+  if (!z) return "";
+  const total = z.reduce((a, b) => a + b, 0); if (!total) return "";
+  const names = ["unter Zone 1", "Zone 1", "Zone 2", "Zone 3", "Zone 4", "Zone 5"];
+  return `<div class="zbar" role="img" aria-label="Zeit in Pulszonen: ${z.map((m, i) => `${names[i]} ${m} Min`).join(", ")}">${z.map((m, i) => m ? `<i class="z${i}" style="flex:${m}" data-tip="${names[i]} · ${m} Min"></i>` : "").join("")}</div>`;
+}
+function hrLineHTML(s) {
+  if (!s.hr) return gmOn() && s.startedAt && s.endedAt ? `<p class="note-line">Puls: wird geladen, sobald deine Uhr mit Garmin Connect synchronisiert hat.</p>` : "";
+  return `<div class="hrline"><span class="num">♥ Ø ${s.hr.avg} · max ${s.hr.max} bpm</span>${zoneBarHTML(s.hr.zones)}</div>`;
+}
+function readyHTML() {
+  if (!gmOn()) return "";
+  const c = gmCache("ready");
+  if (!c || c.date !== todayISO()) return GM.status === "error" ? `<p class="note-line">Garmin: ${esc(GM.msg)}. Mehr im Tab Plan unter Garmin.</p>` : GM.status === "offline" ? "" : `<p class="note-line">Garmin-Erholung wird geladen …</p>`;
+  const r = readiness(c.o || {});
+  if (!r) return `<p class="note-line">Garmin liefert für heute noch keine Erholungswerte. Synchronisiere deine Uhr.</p>`;
+  const lab = { good: "Gut erholt", ok: "Normal erholt", low: "Wenig erholt" }[r.level];
+  const icon = { good: "✓", ok: "~", low: "!" }[r.level];
+  return `<div class="ready ${r.level}"><span class="ready-l"><b class="ready-i" aria-hidden="true">${icon}</b>${lab}</span><span class="ready-v">${r.items.map(i => `<span class="t${i.t}">${i.k}: ${esc(i.v)}</span>`).join("")}</span></div>`
+    + (r.level === "low" ? `<p class="note-line">Laut Garmin bist du heute wenig erholt. Trainiere leichter (RIR 3, einen Satz weniger pro Übung) oder verschiebe auf morgen.</p>` : "");
+}
+
+/* ---------- Analyse ---------- */
+const FAM_ORDER = ["Kraft", "Basketball", "Rad & MTB", "Laufen", "Andere"];
+const FAM_CLS = { Kraft: "s1", Basketball: "s2", "Rad & MTB": "s3", Laufen: "s4", Andere: "s0" };
+function niceMax(v) { if (v <= 0) return 10; const p = Math.pow(10, Math.floor(Math.log10(v))), m = v / p; return (m <= 1 ? 1 : m <= 2 ? 2 : m <= 5 ? 5 : 10) * p; }
+function weeksChartHTML(rows, fams) {
+  const W = 340, H = 190, L = 34, R = 6, T = 10, B = 22, pw = W - L - R, ph = H - T - B;
+  const tot = rows.map(r => fams.reduce((a, f) => a + (f === "Kraft" ? r.Kraft : (r.fam[f] || 0)), 0));
+  const ymax = niceMax(Math.max(30, ...tot)), bw = Math.min(28, pw / rows.length * 0.62), step = pw / rows.length;
+  let g = "";
+  for (let i = 0; i <= 4; i++) { const v = ymax * i / 4, y = T + ph - ph * i / 4; g += `<line x1="${L}" x2="${W - R}" y1="${y}" y2="${y}" class="grid"/><text x="${L - 6}" y="${y + 4}" class="tick" text-anchor="end">${Math.round(v)}</text>`; }
+  rows.forEach((r, i) => {
+    const x = L + step * i + (step - bw) / 2; let y = T + ph;
+    const segs = fams.map(f => [f, f === "Kraft" ? r.Kraft : (r.fam[f] || 0)]).filter(s => s[1] > 0);
+    segs.forEach(([f, v], k) => {
+      const h = ph * v / ymax, top = k === segs.length - 1;
+      const hh = Math.max(1, h - (top ? 0 : 2));
+      y -= h;
+      g += `<rect x="${x.toFixed(1)}" y="${(y + (top ? 0 : 2)).toFixed(1)}" width="${bw.toFixed(1)}" height="${hh.toFixed(1)}" rx="${top ? 3 : 0}" class="${FAM_CLS[f]}" data-tip="Woche ab ${fmtDate(r.wk)} · ${f} ${v} Min${f === "Kraft" ? ` (${r.n}×)` : ""}"/>`;
+    });
+    if (rows.length <= 6 || i % 2 === (rows.length - 1) % 2) g += `<text x="${(x + bw / 2).toFixed(1)}" y="${H - 6}" class="tick" text-anchor="middle">${fmtDate(r.wk).slice(0, -1)}</text>`;
+  });
+  const sums = fams.map(f => [f, rows.reduce((a, r) => a + (f === "Kraft" ? r.Kraft : (r.fam[f] || 0)), 0)]);
+  return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Trainingsminuten pro Woche">${g}</svg>
+    <div class="legend">${sums.map(([f, v]) => `<span><i class="${FAM_CLS[f]}"></i>${f} · ${String(Math.round(v / 6) / 10).replace(".", ",")} h</span>`).join("")}</div>`;
+}
+function lineChartHTML(pts, label, unit, from, to, marks) {
+  if (pts.length < 2) return `<p class="note-line">${label}: noch zu wenige Werte.</p>`;
+  const W = 340, H = 130, L = 34, R = 10, T = 10, B = 20, pw = W - L - R, ph = H - T - B;
+  const t0 = isoToDate(from).getTime(), t1 = isoToDate(to).getTime() || t0 + 1;
+  const xs = d => L + pw * (isoToDate(d).getTime() - t0) / Math.max(1, t1 - t0);
+  let lo = Math.min(...pts.map(p => p.v)), hi = Math.max(...pts.map(p => p.v));
+  const pad = Math.max(2, (hi - lo) * 0.15); lo = Math.floor(lo - pad); hi = Math.ceil(hi + pad);
+  const ys = v => T + ph - ph * (v - lo) / Math.max(1, hi - lo);
+  let g = `<line x1="${L}" x2="${W - R}" y1="${T + ph}" y2="${T + ph}" class="grid"/>`;
+  for (const v of [lo, Math.round((lo + hi) / 2), hi]) g += `<line x1="${L}" x2="${W - R}" y1="${ys(v)}" y2="${ys(v)}" class="grid"/><text x="${L - 6}" y="${ys(v) + 4}" class="tick" text-anchor="end">${v}</text>`;
+  let d = "", prev = null;
+  for (const p of pts) { const gap = prev && (isoToDate(p.date) - isoToDate(prev.date)) > 3 * 86400000; d += `${!prev || gap ? "M" : "L"}${xs(p.date).toFixed(1)},${ys(p.v).toFixed(1)} `; prev = p; }
+  g += `<path d="${d}" class="line"/>`;
+  for (const m of marks || []) g += `<rect x="${(xs(m) - 1.5).toFixed(1)}" y="${T + ph + 3}" width="3" height="5" rx="1" class="mark"/>`;
+  const last = pts[pts.length - 1];
+  g += `<circle cx="${xs(last.date).toFixed(1)}" cy="${ys(last.v).toFixed(1)}" r="4" class="dot"/>`;
+  for (const p of pts) g += `<rect x="${(xs(p.date) - 5).toFixed(1)}" y="${T}" width="10" height="${ph}" class="hit" data-tip="${fmtDateWd(p.date)} · ${label} ${p.v} ${unit}"/>`;
+  g += `<text x="${L}" y="${H - 4}" class="tick">${fmtDate(from)}</text><text x="${W - R}" y="${H - 4}" class="tick" text-anchor="end">${fmtDate(to)}</text>`;
+  return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${label} im Verlauf, zuletzt ${last.v} ${unit}">${g}</svg>`;
+}
+function analysisHTML() {
+  const weeks = S.anaWeeks || 4, today = todayISO();
+  const fromD = isoToDate(mondayOf(today)); fromD.setDate(fromD.getDate() - (weeks - 1) * 7);
+  const from = dateToISO(fromD), ses = S.sessions.filter(s => s.date >= from && s.date <= today);
+  const ana = gmOn() ? gmCache("ana") : null, anaOk = ana && ana.key === from + "|" + today;
+  if (gmOn() && !anaOk) setTimeout(() => gmAnalysis(from, today), 0);
+  const acts = anaOk ? ana.acts : [];
+  const rows = weeklyLoad(S.sessions, acts, from, weeks);
+  const famsUsed = FAM_ORDER.filter(f => f === "Kraft" || rows.some(r => r.fam[f]));
+  const totalSets = ses.reduce((a, s) => a + (s.exercises || []).reduce((b, x) => b + (x.sets || []).length, 0), 0);
+  const other = acts.filter(a => !(a.type === "strength_training" && ses.some(s => s.date === a.date)));
+  if (!S.sessions.length && !acts.length) return `<section class="card"><h2>Analyse</h2><p class="note-line">Sobald du ein paar Trainings gespeichert hast, siehst du hier Umfang pro Woche, Sätze pro Muskelgruppe und deine Kraftentwicklung.${gmOn() ? "" : " Mit Garmin kommen Puls, Erholung und deine anderen Sportarten dazu (Tab Plan → Garmin)."}</p></section>`;
+  let h = `<div class="seg seg2" role="group" aria-label="Zeitraum">${[4, 12].map(w => `<button id="ana-${w}" data-act="ana-weeks" data-v="${w}" aria-pressed="${weeks === w}">${w} Wochen</button>`).join("")}</div>`;
+  h += `<section class="card"><div class="stats">
+    <div class="stat"><b>${ses.length}</b><span>Krafttrainings</span></div>
+    <div class="stat"><b>${(ses.length / weeks).toFixed(1).replace(".", ",")}</b><span>pro Woche</span></div>
+    <div class="stat"><b>${totalSets}</b><span>Sätze</span></div>
+  </div>${gmOn() ? `<p class="note-line">${anaOk ? `Dazu ${other.length} ${other.length === 1 ? "Einheit" : "Einheiten"} anderer Sportarten von deiner Uhr (${String(Math.round(other.reduce((a, x) => a + x.dur, 0) / 360) / 10).replace(".", ",")} h).` : "Garmin-Daten werden geladen …"}</p>` : ""}</section>`;
+  h += `<section class="card"><h2>Training pro Woche</h2><p class="note-line">Minuten je Woche${gmOn() ? ", Krafttraining aus GymBuddy, andere Sportarten von deiner Uhr" : ""}. Antippen zeigt Details.</p>${weeksChartHTML(rows, famsUsed)}</section>`;
+  /* Sätze pro Muskelgruppe */
+  const mus = setsByMuscle(S.sessions, from, today), maxSets = Math.max(22, ...MG.map(g => mus[g] / weeks));
+  h += `<section class="card"><h2>Sätze pro Muskelgruppe</h2><p class="note-line">Durchschnitt pro Woche. Für Muskelaufbau gelten etwa 10–20 Sätze pro Woche als guter Bereich (Feld im Hintergrund). Mitarbeitende Muskeln zählen halb.</p>
+    <div class="mbars">${MG.map(g => { const v = Math.round(mus[g] / weeks * 10) / 10; return `<div class="mrow" data-tip="${g}: ${String(v).replace(".", ",")} Sätze pro Woche"><span class="ml">${g}</span><span class="mt"><span class="band" style="left:${10 / maxSets * 100}%;width:${10 / maxSets * 100}%"></span><span class="mb" style="width:${Math.min(100, v / maxSets * 100)}%"></span></span><span class="mv num">${String(v).replace(".", ",")}</span></div>`; }).join("")}</div></section>`;
+  /* Kraftentwicklung */
+  const exs = []; const seen = new Set();
+  for (const k of DAY_KEYS) for (const e of planEx(k)) if (!seen.has(e.id)) { seen.add(e.id); exs.push(e); }
+  for (const x of knownExtras()) if (!seen.has(x.id)) { seen.add(x.id); exs.push({ id: x.id, name: x.name }); }
+  const tr = exs.map(e => { const pts = strengthSeries(S.sessions, e.id, from, today); return { e, pts, t: trendInfo(pts) }; }).filter(x => x.t);
+  tr.sort((a, b) => (b.t.stall - a.t.stall) || (b.t.pct - a.t.pct));
+  const stalls = tr.filter(x => x.t.stall);
+  h += `<section class="card"><h2>Kraftentwicklung</h2><p class="note-line">Geschätztes Maximalgewicht (e1RM) vom ersten zum letzten Training im Zeitraum, bei Körpergewicht die Wiederholungen. Stagnation heißt: in den letzten drei Trainings kein neuer Bestwert.</p>
+    ${tr.length ? `<div class="trlist">${tr.map(x => `<div class="trrow"><span class="trn">${esc(x.e.name)}</span>${spark(x.pts.map(p => p.v))}<span class="trv num">${fmtKg(x.t.first)} → ${fmtKg(x.t.last)}${x.pts[0].bw ? " Wdh." : " kg"}</span><span class="pill ${x.t.stall ? "warn" : x.t.pct > 0 ? "up" : ""}">${x.t.stall ? "Stagnation" : (x.t.pct > 0 ? "+" : "") + x.t.pct + " %"}</span></div>`).join("")}</div>` : `<p class="note-line">Noch zu wenige Trainings im Zeitraum. Jede Übung braucht mindestens zwei Einträge.</p>`}
+    ${stalls.length ? `<p class="note-line"><b>Tipp bei Stagnation:</b> erst Schlaf und Erholung prüfen, dann das Gewicht für zwei Trainings um 5–10 % senken und neu aufbauen oder die Übung im nächsten Block tauschen.</p>` : ""}</section>`;
+  if (!gmOn()) return h + `<section class="card"><h2>Garmin</h2><p class="note-line">Verbinde Garmin unter <b>Plan → Garmin</b>, um hier Puls im Training, deinen Erholungstrend und andere Sportarten wie Basketball zu sehen.</p></section>`;
+  /* Puls im Krafttraining */
+  const withHr = ses.filter(s => s.hr);
+  const zsum = [0, 0, 0, 0, 0, 0]; withHr.forEach(s => (s.hr.zones || []).forEach((m, i) => { zsum[i] += m; }));
+  h += `<section class="card"><h2>Puls im Krafttraining</h2>${withHr.length ? `<p class="note-line">Aus dem Tagespuls deiner Uhr, ohne gestartete Aktivität. Die Uhr misst dabei grob (etwa alle ${Math.round(withHr[0].hr.step / 6) / 10 || 2} Min), kurze Spitzen fehlen.</p>
+    ${zsum.some(Boolean) ? `<p class="note-line">Zeit in Zonen, alle Trainings zusammen:</p>${zoneBarHTML(zsum)}<div class="legend">${["unter Z1", "Z1", "Z2", "Z3", "Z4", "Z5"].map((n, i) => `<span><i class="z${i}"></i>${n} ${zsum[i]} Min</span>`).join("")}</div>` : ""}
+    <div class="hrtable">${withHr.map(s => `<div><span>${fmtDateWd(s.date)} · Tag ${s.day}</span><span class="num">Ø ${s.hr.avg} · max ${s.hr.max}</span>${zoneBarHTML(s.hr.zones)}</div>`).join("")}</div>` : `<p class="note-line">Noch keine Pulsdaten. Sie erscheinen nach dem nächsten Training mit Beginn und Ende, sobald deine Uhr synchronisiert hat.</p>`}</section>`;
+  /* Erholungstrend */
+  if (anaOk) {
+    const days = ana.days || {}, ds = Object.keys(days).filter(d => d >= from && d <= today).sort();
+    const rhr = ds.map(d => ({ date: d, v: num(days[d].restingHeartRate) })).filter(p => p.v);
+    const hrv = ds.map(d => ({ date: d, v: num(days[d].lastNightAvg) })).filter(p => p.v);
+    const marks = ses.map(s => s.date);
+    h += `<section class="card"><h2>Erholung</h2><p class="note-line">Sinkt der Ruhepuls und steigt die HRV, verkraftest du das Training gut. Striche unten markieren Krafttrainings.</p>
+      <h3 class="sub">Ruhepuls (bpm)</h3>${lineChartHTML(rhr, "Ruhepuls", "bpm", from, today, marks)}
+      <h3 class="sub">HRV nachts (ms)</h3>${lineChartHTML(hrv, "HRV", "ms", from, today, marks)}</section>`;
+    /* andere Sportarten */
+    const byType = {};
+    other.forEach(a => { const k = sportLabel(a.type); const b = byType[k] || (byType[k] = { n: 0, min: 0, hr: [], te: [] }); b.n++; b.min += a.dur / 60; if (a.avgHR) b.hr.push(a.avgHR); if (a.te) b.te.push(a.te); });
+    const avg = arr => arr.length ? Math.round(arr.reduce((x, y) => x + y, 0) / arr.length * 10) / 10 : null;
+    h += `<section class="card"><h2>Andere Sportarten</h2>${other.length ? `<div class="sporttable"><div class="sh"><span>Sportart</span><span>Einheiten</span><span>Stunden</span><span>Ø Puls</span></div>${Object.entries(byType).sort((a, b) => b[1].min - a[1].min).map(([k, b]) => `<div><span>${esc(k)}</span><span class="num">${b.n}</span><span class="num">${String(Math.round(b.min / 6) / 10).replace(".", ",")}</span><span class="num">${avg(b.hr) != null ? Math.round(avg(b.hr)) : "–"}</span></div>`).join("")}</div>
+      <div class="hlist">${other.slice(0, 12).map(a => `<div><span>${fmtDateWd(a.date)} · ${esc(sportLabel(a.type))}${a.name ? `<br><small>${esc(a.name)}</small>` : ""}</span><span>${Math.round(a.dur / 60)} Min${a.avgHR ? ` · Ø ${Math.round(a.avgHR)}` : ""}${a.te ? ` · TE ${String(Math.round(a.te * 10) / 10).replace(".", ",")}` : ""}</span></div>`).join("")}</div>
+      <p class="note-line">TE = aerober Trainingseffekt von Garmin (0–5). Diese Einheiten belasten vor allem Beine und Kreislauf. Liegt eine harte Einheit am Vortag, plane im Krafttraining etwas längere Pausen und bei Beinübungen weniger Gewicht ein.</p>` : `<p class="note-line">Keine anderen Aktivitäten im Zeitraum. Zeichne z. B. Basketball auf der Uhr auf, dann erscheint es hier.</p>`}</section>`;
+  } else if (GM.status === "error") h += `<section class="card"><h2>Garmin</h2><p class="status">${esc(GM.msg)}</p></section>`;
+  return h;
+}
+
+/* Tooltip für Diagramme und Balken (Tippen oder Hovern) */
+document.addEventListener("pointerover", ev => { const t = ev.target.closest && ev.target.closest("[data-tip]"); if (t && ev.pointerType === "mouse") showTip(t, ev); });
+document.addEventListener("pointerout", ev => { if (ev.pointerType === "mouse" && ev.target.closest && ev.target.closest("[data-tip]")) hideTip(); });
+document.addEventListener("click", ev => { const t = ev.target.closest && ev.target.closest("[data-tip]"); if (t && !ev.target.closest("[data-act]")) showTip(t, ev); else hideTip(); }, true);
+window.addEventListener("scroll", () => hideTip(), { passive: true });
+function showTip(el, ev) {
+  const tip = $("#tip"); if (!tip) return;
+  tip.textContent = el.getAttribute("data-tip"); tip.hidden = false;
+  const x = Math.min(window.innerWidth - tip.offsetWidth - 8, Math.max(8, ev.clientX - tip.offsetWidth / 2));
+  const y = ev.clientY - tip.offsetHeight - 12;
+  tip.style.left = x + "px"; tip.style.top = (y < 8 ? ev.clientY + 16 : y) + "px";
+}
+function hideTip() { const tip = $("#tip"); if (tip) tip.hidden = true; }
 
 /* ---------- Drag and Drop: Reihenfolge nur für dieses Training (S.draft.order), der Plan bleibt unverändert ---------- */
 const GRIP = '<svg viewBox="0 0 12 20" aria-hidden="true"><circle cx="3" cy="4" r="1.6"/><circle cx="9" cy="4" r="1.6"/><circle cx="3" cy="10" r="1.6"/><circle cx="9" cy="10" r="1.6"/><circle cx="3" cy="16" r="1.6"/><circle cx="9" cy="16" r="1.6"/></svg>';
@@ -1575,6 +2085,7 @@ window.addEventListener("pointercancel", () => { if (DR.li) endDrag(); });
 derive();
 render();
 if (hasToken()) sync(); else setSync(linked() ? "auth" : "off");
+gmRefreshAll();
 try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (e) {}
 if ("serviceWorker" in navigator && window.isSecureContext) navigator.serviceWorker.register("sw.js").catch(() => {});
 </script>
