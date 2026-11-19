@@ -318,6 +318,11 @@ td { padding: 6px 8px 6px 0; border-top: 1px solid var(--line); vertical-align: 
 .tip { position: fixed; z-index: 30; background: var(--fg); color: var(--bg); font-size: 13px; padding: 6px 10px; border-radius: 8px; pointer-events: none; max-width: 80vw; box-shadow: var(--shadow); }
 .chipbtn input[type="time"] { border: 0; background: none; padding: 0; font-size: 13px; width: 5.4em; }
 .field.wide input { max-width: none; width: 100%; }
+.gm-msg { font-size: 14px; margin: 8px 0 0; padding: 8px 10px; border-radius: 8px; background: var(--surface-2); }
+.gm-msg.err { border-left: 3px solid var(--st-crit); }
+.gm-msg.ok { border-left: 3px solid var(--st-good); }
+.gm-msg.busy { border-left: 3px solid var(--line); }
+.gm-msg a { white-space: nowrap; }
 @media (max-width: 400px) { .pe-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 @media (prefers-reduced-motion: no-preference) {
   .timer-bar i { transition: transform .25s linear; }
@@ -1088,7 +1093,13 @@ function refresh() {
   if (a && $("#app").contains(a) && /INPUT|TEXTAREA|SELECT/.test(a.tagName)) { needsRender = true; return; }
   render();
 }
-document.addEventListener("focusout", () => setTimeout(() => { if (needsRender) { needsRender = false; refresh(); } }, 0));
+/* Aufgeschobenes Neuzeichnen erst nach dem Antippen, sonst verschwindet der Knopf unter dem Finger */
+let ptrDown = false;
+function flushRender() { if (needsRender && !ptrDown) { needsRender = false; refresh(); } }
+document.addEventListener("pointerdown", () => { ptrDown = true; }, true);
+document.addEventListener("pointerup", () => { ptrDown = false; setTimeout(flushRender, 350); }, true);
+document.addEventListener("pointercancel", () => { ptrDown = false; setTimeout(flushRender, 350); }, true);
+document.addEventListener("focusout", () => setTimeout(flushRender, 0));
 function render() {
   const app = $("#app");
   if (S.view === "workout" && S.draft) { app.innerHTML = workoutHTML(); updateDock(); tickTimer(); return; }
@@ -1422,9 +1433,10 @@ function planHTML() {
   <section class="card"><h2>Spontane Übungen</h2>${xs.length ? `<div class="xlist">${xs.map(x => `<label for="xl-${x.id}">${esc(x.name)}<input id="xl-${x.id}" data-xl="${x.id}" inputmode="url" value="${esc(x.link || "")}" placeholder="Link zur Anleitung (optional)"></label>`).join("")}</div>` : `<p class="note-line">Noch keine. Im Training kannst du unten „+ Übung hinzufügen“ antippen.</p>`}</section>
   <section class="card"><h2>Garmin</h2>
     <p class="status" id="garmin-status">${esc(gmStatusText())}</p>
-    <label class="field wide" for="gm-url">Adresse der Web-App (Apps Script)<input id="gm-url" inputmode="url" autocomplete="off" placeholder="https://script.google.com/macros/s/…/exec" value="${esc(gmCfg().url || "")}"></label>
-    <label class="field wide" for="gm-secret">Secret (APP_SECRET aus dem Script)<input id="gm-secret" type="password" autocomplete="off" value="${esc(gmCfg().secret || "")}"></label>
-    <div class="row"><button class="btn primary" id="gm-save" data-act="gm-save">Speichern & testen</button>${gmOn() ? `<button class="btn ghost" id="gm-diag" data-act="gm-diag">Diagnose</button>` : ""}</div>
+    <label class="field wide" for="gm-url">Adresse der Web-App (Apps Script)<input id="gm-url" inputmode="url" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="https://script.google.com/macros/s/…/exec" value="${esc(gmFormVal("url"))}"></label>
+    <label class="field wide" for="gm-secret">Secret (APP_SECRET aus dem Script)<input id="gm-secret" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" value="${esc(gmFormVal("secret"))}"></label>
+    <div class="row"><button class="btn primary" id="gm-save" data-act="gm-save" ${GM.testing ? "disabled" : ""}>${GM.testing ? "Teste …" : "Speichern & testen"}</button>${gmOn() && !GM.testing ? `<button class="btn ghost" id="gm-diag" data-act="gm-diag">Diagnose</button>` : ""}</div>
+    ${gmMsgHTML()}
     <p class="note-line">GymBuddy holt über dein Apps-Script den Tagespuls, Schlaf, HRV, Body Battery und die Aktivitäten deiner Uhr. Ein Training auf der Uhr musst du dafür nicht starten. Die Daten erscheinen, sobald die Uhr mit Garmin Connect synchronisiert hat.</p>
     ${gmOn() ? (S.confirm === "gm-remove" ? confirmHTML("Garmin-Verbindung auf diesem Gerät entfernen?", "gm-remove-yes", "Entfernen") : `<div class="row"><button class="link" id="gm-remove" data-act="confirm" data-v="gm-remove">Verbindung entfernen</button></div>`) : ""}
   </section>
@@ -1691,15 +1703,19 @@ document.addEventListener("click", ev => {
     case "addex-ok": addExtra(); return;
     case "ana-weeks": S.anaWeeks = Number(v) || 4; render(); return;
     case "gm-save": {
-      const url = ($("#gm-url").value || "").trim(), secret = ($("#gm-secret").value || "").trim();
-      if (!/^https:\/\/script\.google(usercontent)?\.com\//.test(url)) { toast("Bitte die Web-App-Adresse von script.google.com einfügen."); return; }
-      if (secret.length < 8) { toast("Das Secret ist zu kurz."); return; }
-      LS.set("garmin", { url, secret }); LS.del("gmcache"); LS.del("gmTried"); GM.status = ""; b.disabled = true; b.textContent = "Teste …";
-      gm("ping").then(() => { GM.status = "ok"; toast("Garmin verbunden"); gmReady(true); gmFillHr(); }).catch(e => { gmFail(e); toast("Verbindung fehlgeschlagen"); }).finally(() => { render(); });
+      const url = ($("#gm-url").value || "").replace(/\s+/g, ""), secret = ($("#gm-secret").value || "").trim();
+      S.gmForm = { url, secret }; GM.justOk = false;
+      GM.form = gmUrlProblem(url) || (secret.length < 8 ? "Das Secret ist zu kurz (mindestens 8 Zeichen, genau wie APP_SECRET im Skript)." : "");
+      if (GM.form) { render(); toast(GM.form, 5000); return; }
+      LS.set("garmin", { url, secret }); LS.del("gmcache"); LS.del("gmTried"); GM.status = ""; GM.testing = true; render();
+      gm("ping", null, 40000)
+        .then(() => { GM.status = "ok"; GM.justOk = true; S.gmForm = null; toast("Garmin verbunden"); gmReady(true); gmFillHr(); })
+        .catch(e => { gmFail(e); toast("Verbindung fehlgeschlagen"); })
+        .finally(() => { GM.testing = false; render(); });
       return;
     }
     case "gm-diag": gmDiagnose(); return;
-    case "gm-remove-yes": LS.del("garmin"); LS.del("gmcache"); LS.del("gmTried"); GM.status = ""; S.confirm = null; render(); toast("Garmin-Verbindung entfernt"); return;
+    case "gm-remove-yes": LS.del("garmin"); LS.del("gmcache"); LS.del("gmTried"); GM.status = ""; GM.justOk = false; GM.form = ""; S.gmForm = null; S.confirm = null; render(); toast("Garmin-Verbindung entfernt"); return;
     case "reo-start": S.reorder = true; render(); window.scrollTo(0, 0); return;
     case "reo-done": S.reorder = false; render(); window.scrollTo(0, 0); return;
     case "reo-reset": { const D = S.draft, planIds = planEx(D.day).map(e => e.id); D.order = planIds.concat(D.order.filter(id => !planIds.includes(id))); touch(); render(); return; }
@@ -1751,6 +1767,7 @@ document.addEventListener("click", ev => {
 
 document.addEventListener("input", ev => {
   const t = ev.target;
+  if (t.id === "gm-url" || t.id === "gm-secret") { S.gmForm = Object.assign({}, S.gmForm, { [t.id === "gm-url" ? "url" : "secret"]: t.value }); GM.form = ""; return; }
   if (t.id === "addex-name") { const sg = $("#addex-sugg"); if (sg) sg.innerHTML = suggHTML(t.value); return; }
   if (t.dataset.f && S.view === "workout" && S.draft) {
     if (t.dataset.f === "date") {
@@ -1801,24 +1818,49 @@ document.addEventListener("change", ev => {
 document.addEventListener("keydown", ev => { if (ev.key === "Enter" && ev.target.id === "addex-name") { ev.preventDefault(); ev.target.blur(); } });
 
 /* ---------- Garmin (über deinen Apps-Script-Zwischendienst) ---------- */
-const GM = { busy: {}, status: "", msg: "" };
+const GM = { busy: {}, status: "", msg: "", testing: false, form: "", justOk: false };
 const gmCfg = () => LS.get("garmin") || {};
 const gmOn = () => { const c = gmCfg(); return !!(c.url && c.secret); };
 const gmCache = (k, v) => { const all = LS.get("gmcache") || {}; if (v === undefined) return all[k]; all[k] = v; LS.set("gmcache", all); };
-async function gm(op, params) {
+async function gm(op, params, ms) {
   const c = gmCfg(); if (!c.url || !c.secret) throw { cfg: true };
   let u; try { u = new URL(c.url); } catch (e) { throw { msg: "Die Adresse der Web-App ist ungültig." }; }
   u.searchParams.set("op", op); u.searchParams.set("s", c.secret);
   for (const k in params || {}) u.searchParams.set(k, params[k]);
-  let r; try { r = await fetch(u.toString()); } catch (e) { throw { msg: navigator.onLine ? "Keine Antwort vom Zwischendienst. Ist die Web-App für „Jeder“ freigegeben?" : "Keine Internetverbindung.", offline: !navigator.onLine }; }
-  let j; try { j = await r.json(); } catch (e) { throw { msg: "Unerwartete Antwort. Stimmt die Adresse der Web-App?" }; }
+  const ac = typeof AbortController === "function" ? new AbortController() : null, tm = ac && setTimeout(() => ac.abort(), ms || 60000);
+  let r;
+  try { r = await fetch(u.toString(), ac ? { signal: ac.signal } : undefined); }
+  catch (e) {
+    if (!navigator.onLine) throw { msg: "Keine Internetverbindung.", offline: true };
+    if (e && e.name === "AbortError") throw { msg: `Keine Antwort nach ${Math.round((ms || 60000) / 1000)} Sekunden. Prüfe mit „Antwort im Browser ansehen“, ob die Web-App läuft.` };
+    throw { msg: "Die Web-App lässt GymBuddy nicht zu. Meist steht der Zugriff nicht auf „Jeder“ oder die Änderung wurde nicht als neue Version bereitgestellt." };
+  } finally { if (tm) clearTimeout(tm); }
+  let j; try { j = await r.json(); } catch (e) { throw { msg: "Die Adresse liefert keine GymBuddy-Antwort. Ist es die Web-App-URL mit /exec und ist Code.gs gespeichert und bereitgestellt?" }; }
   if (j.error) throw { msg: j.message || j.error, code: j.error };
   return j;
 }
 function gmFail(e) { if (e && e.cfg) return; GM.status = e && e.offline ? "offline" : "error"; GM.msg = (e && e.msg) || String(e); const st = $("#garmin-status"); if (st) st.textContent = gmStatusText(); }
+const gmFormVal = k => S.gmForm && S.gmForm[k] != null ? S.gmForm[k] : (gmCfg()[k] || "");
+/* Typische Verwechslungen beim Kopieren der Adresse abfangen */
+function gmUrlProblem(url) {
+  if (!url) return "Bitte die Web-App-URL einfügen.";
+  if (!/^https:\/\/script\.google(usercontent)?\.com\//.test(url)) return "Die Adresse muss mit https://script.google.com/ beginnen.";
+  if (/\/dev(\?|$)/.test(url)) return "Das ist die Test-Adresse (endet auf /dev). Nimm die Web-App-URL, die auf /exec endet.";
+  if (/\/(edit|home)(\/|\?|$)|\/projects\//.test(url) || !/\/macros\//.test(url)) return "Das ist die Adresse des Skript-Editors. Du brauchst die Web-App-URL aus Bereitstellen → Bereitstellungen verwalten (endet auf /exec).";
+  if (!/\/exec(\?|$)/.test(url)) return "Die Web-App-URL endet auf /exec. Bitte vollständig kopieren.";
+  return "";
+}
+function gmPingUrl() { try { const u = new URL(gmCfg().url); u.searchParams.set("op", "ping"); u.searchParams.set("s", gmCfg().secret); return u.toString(); } catch (e) { return ""; } }
+function gmMsgHTML() {
+  if (GM.testing) return `<p class="gm-msg busy" id="gm-msg" role="status">Teste die Verbindung … Beim ersten Mal kann das bis zu 30 Sekunden dauern.</p>`;
+  if (GM.form) return `<p class="gm-msg err" id="gm-msg" role="status">${esc(GM.form)}</p>`;
+  if (GM.status === "error" && gmOn()) { const l = gmPingUrl(); return `<p class="gm-msg err" id="gm-msg" role="status">${esc(GM.msg)}${l ? ` <a href="${esc(l)}" target="_blank" rel="noopener">Antwort im Browser ansehen</a>` : ""}</p>`; }
+  if (GM.justOk) return `<p class="gm-msg ok" id="gm-msg" role="status">✓ Verbunden. Die Erholungsampel erscheint im Tab Training.</p>`;
+  return "";
+}
 function gmStatusText() {
   if (!gmOn()) return "Nicht verbunden. Trage die Adresse deiner Web-App und dein Secret ein.";
-  if (GM.status === "error") return "Fehler: " + GM.msg;
+  if (GM.status === "error") return "Verbindung fehlgeschlagen. Was zu tun ist, steht unter dem Knopf.";
   if (GM.status === "offline") return "Offline – Garmin-Daten werden später geladen.";
   const r = gmCache("ready");
   return r && r.at ? `Verbunden · zuletzt geladen ${new Date(r.at).toLocaleString("de-DE", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}` : "Verbunden.";
