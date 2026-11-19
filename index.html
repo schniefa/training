@@ -536,7 +536,7 @@ function numberLabels(list) {
   return out;
 }
 /* ----- data model + merge (Drive sync) ----- */
-function emptyData() { return { v: 1, plan: null, planAt: 0, settings: { blockStart: null }, settingsAt: 0, sessions: {}, deleted: {}, extras: {}, sheetId: null }; }
+function emptyData() { return { v: 1, plan: null, planAt: 0, settings: { blockStart: null }, settingsAt: 0, sessions: {}, deleted: {}, extras: {}, sheetId: null, garmin: null }; }
 function normalizeData(d) {
   const e = emptyData();
   if (!d || typeof d !== "object") return e;
@@ -552,6 +552,7 @@ function mergeData(a, b) {
   const sa = (b.settingsAt || 0) > (a.settingsAt || 0) ? b : a;
   o.settings = sa.settings; o.settingsAt = sa.settingsAt || 0;
   o.sheetId = a.sheetId || b.sheetId || null;
+  o.garmin = ((b.garmin && b.garmin.at) || 0) > ((a.garmin && a.garmin.at) || 0) ? b.garmin : a.garmin; /* Garmin-Verbindung: neueste gewinnt */
   for (const src of [a.deleted, b.deleted]) for (const id in src) o.deleted[id] = Math.max(o.deleted[id] || 0, src[id] || 0);
   for (const src of [a.extras, b.extras]) for (const id in src) { const cur = o.extras[id]; if (!cur || (src[id].at || 0) > (cur.at || 0)) o.extras[id] = src[id]; }
   for (const src of [a.sessions, b.sessions]) for (const id in src) {
@@ -996,7 +997,7 @@ async function sync() {
     const before = stable(S.data);
     const merged = remote ? mergeData(S.data, remote) : normalizeData(S.data);
     const mp = migratePlan(merged.plan); if (mp) { merged.plan = mp; merged.planAt = Date.now(); }
-    if (stable(merged) !== before) { S.data = merged; LS.set("data", S.data); derive(); refresh(); refreshWorkout(); }
+    if (stable(merged) !== before) { const g0 = stable(gmCfg()); S.data = merged; LS.set("data", S.data); derive(); if (stable(gmCfg()) !== g0) { LS.del("gmcache"); GM.status = ""; GM.justOk = false; gmRefreshAll(); } refresh(); refreshWorkout(); }
     await mirrorSheet();
     if (!remote || stable(normalizeData(remote)) !== stable(S.data)) fileId = await upload(fileId, JSON.stringify(S.data));
     LS.set("fileId", fileId);
@@ -1437,8 +1438,8 @@ function planHTML() {
     <label class="field wide" for="gm-secret">Secret (APP_SECRET aus dem Script)<input id="gm-secret" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" value="${esc(gmFormVal("secret"))}"></label>
     <div class="row"><button class="btn primary" id="gm-save" data-act="gm-save" ${GM.testing ? "disabled" : ""}>${GM.testing ? "Teste …" : "Speichern & testen"}</button>${gmOn() && !GM.testing ? `<button class="btn ghost" id="gm-diag" data-act="gm-diag">Diagnose</button>` : ""}</div>
     ${gmMsgHTML()}
-    <p class="note-line">GymBuddy holt über dein Apps-Script den Tagespuls, Schlaf, HRV, Body Battery und die Aktivitäten deiner Uhr. Ein Training auf der Uhr musst du dafür nicht starten. Die Daten erscheinen, sobald die Uhr mit Garmin Connect synchronisiert hat.</p>
-    ${gmOn() ? (S.confirm === "gm-remove" ? confirmHTML("Garmin-Verbindung auf diesem Gerät entfernen?", "gm-remove-yes", "Entfernen") : `<div class="row"><button class="link" id="gm-remove" data-act="confirm" data-v="gm-remove">Verbindung entfernen</button></div>`) : ""}
+    <p class="note-line">GymBuddy holt über dein Apps-Script den Tagespuls, Schlaf, HRV, Body Battery und die Aktivitäten deiner Uhr. Ein Training auf der Uhr musst du dafür nicht starten. Die Daten erscheinen, sobald die Uhr mit Garmin Connect synchronisiert hat. Mit Google Drive verbunden, gilt die Verbindung auch auf deinen anderen Geräten.</p>
+    ${gmOn() ? (S.confirm === "gm-remove" ? confirmHTML("Garmin-Verbindung auf allen Geräten entfernen?", "gm-remove-yes", "Entfernen") : `<div class="row"><button class="link" id="gm-remove" data-act="confirm" data-v="gm-remove">Verbindung entfernen</button></div>`) : ""}
   </section>
   <section class="card"><h2>Pausentimer</h2><label class="toggle" for="pref-sound"><input type="checkbox" id="pref-sound" data-pf="sound" ${prefs.sound ? "checked" : ""}> Signalton am Ende der Pause</label><p class="note-line">Der Bildschirm bleibt während des Trainings an, wenn dein Gerät das erlaubt.</p></section>
   <section class="card"><h2>Import & Export</h2>
@@ -1707,7 +1708,7 @@ document.addEventListener("click", ev => {
       S.gmForm = { url, secret }; GM.justOk = false;
       GM.form = gmUrlProblem(url) || (secret.length < 8 ? "Das Secret ist zu kurz (mindestens 8 Zeichen, genau wie APP_SECRET im Skript)." : "");
       if (GM.form) { render(); toast(GM.form, 5000); return; }
-      LS.set("garmin", { url, secret }); LS.del("gmcache"); LS.del("gmTried"); GM.status = ""; GM.testing = true; render();
+      gmSetCfg({ url, secret }); LS.del("gmcache"); LS.del("gmTried"); GM.status = ""; GM.testing = true; render();
       gm("ping", null, 40000)
         .then(() => { GM.status = "ok"; GM.justOk = true; S.gmForm = null; toast("Garmin verbunden"); gmReady(true); gmFillHr(); })
         .catch(e => { gmFail(e); toast("Verbindung fehlgeschlagen"); })
@@ -1715,7 +1716,7 @@ document.addEventListener("click", ev => {
       return;
     }
     case "gm-diag": gmDiagnose(); return;
-    case "gm-remove-yes": LS.del("garmin"); LS.del("gmcache"); LS.del("gmTried"); GM.status = ""; GM.justOk = false; GM.form = ""; S.gmForm = null; S.confirm = null; render(); toast("Garmin-Verbindung entfernt"); return;
+    case "gm-remove-yes": gmSetCfg({ off: true }); LS.del("gmcache"); LS.del("gmTried"); GM.status = ""; GM.justOk = false; GM.form = ""; S.gmForm = null; S.confirm = null; render(); toast("Garmin-Verbindung entfernt"); return;
     case "reo-start": S.reorder = true; render(); window.scrollTo(0, 0); return;
     case "reo-done": S.reorder = false; render(); window.scrollTo(0, 0); return;
     case "reo-reset": { const D = S.draft, planIds = planEx(D.day).map(e => e.id); D.order = planIds.concat(D.order.filter(id => !planIds.includes(id))); touch(); render(); return; }
@@ -1735,7 +1736,7 @@ document.addEventListener("click", ev => {
     case "pe-reset": { const au = (S.data.plan && S.data.plan.auto) || []; S.data.plan = au.length ? { v: PLAN_V, auto: au } : null; } S.data.planAt = Date.now(); commit(); S.pe = null; S.confirm = null; render(); toast("Ursprünglicher Plan wiederhergestellt"); syncFromTap(false); return;
     case "import": $("#import-file").click(); return;
     case "export-csv": exportCSV(); return;
-    case "export-json": downloadFile(`gymbuddy-sicherung-${todayISO()}.json`, JSON.stringify(S.data, null, 1), "application/json"); return;
+    case "export-json": downloadFile(`gymbuddy-sicherung-${todayISO()}.json`, JSON.stringify(Object.assign({}, S.data, { garmin: undefined }), null, 1), "application/json"); return;
   }
   const c = setCtx(b); if (!c) return;
   const { e, st, s, i, id } = c;
@@ -1819,7 +1820,8 @@ document.addEventListener("keydown", ev => { if (ev.key === "Enter" && ev.target
 
 /* ---------- Garmin (über deinen Apps-Script-Zwischendienst) ---------- */
 const GM = { busy: {}, status: "", msg: "", testing: false, form: "", justOk: false };
-const gmCfg = () => LS.get("garmin") || {};
+const gmCfg = () => { const g = S.data.garmin; if (g && g.at) return g.off ? {} : g; return LS.get("garmin") || {}; };
+function gmSetCfg(c) { S.data.garmin = Object.assign({ at: Date.now() }, c); LS.del("garmin"); commit(); }
 const gmOn = () => { const c = gmCfg(); return !!(c.url && c.secret); };
 const gmCache = (k, v) => { const all = LS.get("gmcache") || {}; if (v === undefined) return all[k]; all[k] = v; LS.set("gmcache", all); };
 async function gm(op, params, ms) {
@@ -2123,6 +2125,7 @@ window.addEventListener("pointerup", () => { if (DR.li) endDrag(); });
 window.addEventListener("pointercancel", () => { if (DR.li) endDrag(); });
 
 /* ---------- boot ---------- */
+{ const g = LS.get("garmin"); if (g && g.url && !(S.data.garmin && S.data.garmin.at)) { S.data.garmin = { url: g.url, secret: g.secret, at: Date.now() }; LS.set("data", S.data); } LS.del("garmin"); }
 { const mp = migratePlan(S.data.plan); if (mp) { S.data.plan = mp; S.data.planAt = Date.now(); LS.set("data", S.data); } }
 derive();
 render();
